@@ -2,32 +2,85 @@
 
 import {ReactNode, useEffect} from 'react'
 import {usePathname, useRouter} from 'next/navigation'
+import {useSession} from 'next-auth/react'
+import {useApiToken} from '@/app/_hooks/useApiToken'
+import {ProfileProvider} from '@/app/_components/profile-provider'
+import Navigation from '@/app/_components/Navigation'
+import Footer from '@/app/_components/Footer'
+import useCart from '@/app/hooks/use-cart'
 
 export default function UserLayout({children}: {children: ReactNode}) {
   const router = useRouter()
   const pathname = usePathname()
+  const {data: session, status} = useSession()
+  const {loadCart} = useCart()
+
+  // Initialize cart when authenticated - FIXED to prevent infinite loop
+  useEffect(() => {
+    if (status === 'authenticated') {
+      loadCart()
+    }
+  }, [status]) // Remove loadCart from dependencies
+
+  useApiToken() // Initialize token management
 
   useEffect(() => {
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
-
     const isAuthPage = pathname === '/login' || pathname === '/signup'
 
-    const isAuth = token !== null
+    // Wait for session to load
+    if (status === 'loading') return
 
-    if (!isAuth && !isAuthPage) {
+    // Check if authenticated
+    const isAuthenticated = status === 'authenticated'
+
+    if (!isAuthenticated && !isAuthPage) {
       router.replace('/login')
       return
     }
 
-    if (isAuth && isAuthPage) {
+    if (isAuthenticated && isAuthPage) {
       router.replace('/')
     }
-  }, [pathname, router])
+
+    // Token is now handled by NextAuth session, no need for localStorage
+  }, [pathname, router, session, status])
+
+  // Loading handler DISABLED to prevent infinite loops
+  // useEffect(() => {
+  //   const handleLoading = (count: number) => {
+  //     setIsLoading(count > 0)
+  //   }
+
+  //   subscribeToLoading(handleLoading)
+
+  //   return () => {
+  //     unsubscribeFromLoading(handleLoading)
+  //   }
+  // }, [])
+
+  const isAuthPage = pathname === '/login' || pathname === '/signup'
+
+  // Show loading while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-amber-50 via-white to-rose-50 flex items-center justify-center p-4">
+        <div className="text-center mobile-card mobile-shadow-lg bg-white rounded-2xl p-8 max-w-sm w-full">
+          <div className="animate-spin rounded-full h-12 w-12 md:h-16 md:w-16 border-b-2 border-rose-500 mx-auto mb-6"></div>
+          <p className="text-slate-600 text-sm md:text-base mobile-text">
+            Loading...
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
-      <main className="flex-1">{children}</main>
-    </div>
+    <ProfileProvider>
+      <div className="min-h-screen bg-linear-to-br from-amber-50 via-white to-rose-50 text-slate-900 flex flex-col">
+        {!isAuthPage && <Navigation />}
+        <main className={`flex-1 ${!isAuthPage && 'pt-16'}`}>{children}</main>
+        {!isAuthPage && <Footer />}
+      </div>
+    </ProfileProvider>
   )
 }

@@ -1,3 +1,90 @@
 @import 'tailwindcss';
 
 @custom-variant link-active (&[data-active='true']);
+
+/* Mobile-optimized styles */
+@media (max-width: 768px) {
+  /* Better spacing for mobile */
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Improved mobile navigation */
+  .mobile-nav {
+    padding: 1rem 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Mobile cards with better spacing */
+  .mobile-card {
+    margin: 0.75rem;
+    padding: 1.25rem;
+    border-radius: 1rem;
+  }
+
+  /* Mobile buttons with better touch targets */
+  .mobile-button {
+    min-height: 2.75rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+  }
+
+  /* Mobile forms with better spacing */
+  .mobile-form {
+    padding: 1.5rem;
+  }
+
+  .mobile-form input,
+  .mobile-form textarea,
+  .mobile-form select {
+    padding: 0.875rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+  }
+
+  /* Mobile grid layouts */
+  .mobile-grid {
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  /* Mobile text spacing */
+  .mobile-text {
+    line-height: 1.6;
+  }
+
+  /* Mobile hero sections */
+  .mobile-hero {
+    padding: 2rem 1rem;
+    min-height: 60vh;
+  }
+
+  /* Mobile product cards */
+  .mobile-product-card {
+    margin: 0.5rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  /* Mobile footer */
+  .mobile-footer {
+    padding: 2rem 1rem 1rem;
+  }
+}
+
+/* Smooth transitions */
+.mobile-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile shadows */
+.mobile-shadow {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.mobile-shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}

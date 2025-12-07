@@ -114,7 +114,7 @@ export default function CategoryDetails() {
             <h2 className="text-xl md:text-2xl font-semibold mb-4 text-slate-900">
               SubCategories
             </h2>
-            <div className="grid gap-6 md:grid-cols-2 ">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {subCategories.map((subCategory) => (
                 <Link
                   key={subCategory._id}

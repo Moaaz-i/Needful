@@ -54,7 +54,7 @@ export default function SubCategories() {
         )}
 
         {!error && (
-          <section className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <section className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
             {subcategories.map((sub) => (
               <Link
                 key={sub._id}

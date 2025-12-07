@@ -20,17 +20,37 @@ export function unsubscribeFromLoading(listener: (count: number) => void) {
 
 export default function Api() {
   const api = axios.create({
-    baseURL: 'https://ecommerce.routemisr.com/api/v1',
+    baseURL: '/api/proxy',
     headers: {
-      'Content-Type': 'application/json',
-      token:
-        typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
+      'Content-Type': 'application/json'
     }
   })
 
   api.interceptors.request.use((config) => {
     activeRequests += 1
     notifyLoading()
+
+    // Get token from global variable set by useApiToken hook
+    const globalToken =
+      typeof window !== 'undefined' && (window as any).__apiToken
+        ? (window as any).__apiToken
+        : ''
+
+    if (globalToken) {
+      config.headers.token = globalToken
+    }
+
+    // Add custom identifier and move endpoint to query params
+    if (config.url) {
+      const randomParam = Math.random().toString(36).substring(7)
+      config.params = {
+        ...config.params,
+        endpoint: config.url,
+        _custom: randomParam
+      }
+      config.url = '' // Clear URL since endpoint is now in params
+    }
+
     return config
   })
 

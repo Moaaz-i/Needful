@@ -1,17 +1,11 @@
 import Api from './api'
-
-export type CartProduct = {
-  _id: string
-  title: string
-  imageCover: string
-  price: number
-}
+import {Product} from '@/types'
 
 export type CartItem = {
   _id: string
   count: number
   price: number
-  product: CartProduct
+  product: Product
 }
 
 export type CartResponse = {

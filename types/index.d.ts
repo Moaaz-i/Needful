@@ -16,12 +16,18 @@ export interface Product {
     slug: string
     image?: string
   }
-  brand: {
+  brand?: {
     _id: string
     name: string
     slug: string
     image?: string
   }
+  subcategory?: Array<{
+    _id: string
+    name: string
+    slug: string
+    category: string
+  }>
   ratingsAverage: number
   ratingsQuantity: number
   createdAt: string

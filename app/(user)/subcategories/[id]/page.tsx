@@ -2,9 +2,11 @@
 
 import {useEffect, useState} from 'react'
 import {useParams} from 'next/navigation'
-import Link from 'next/link'
 import {getSubCategoryById, SubCategory} from '../../../_api/subcategories'
-import {getProductsByCategory, Product} from '../../../_api/products'
+import {getProductsByCategory} from '../../../_api/products'
+import {Product} from '@/types'
+import {ProductCard} from '../../../_components/product-card'
+import Link from 'next/link'
 
 export default function SubCategoryDetails() {
   const params = useParams()
@@ -86,39 +88,9 @@ export default function SubCategoryDetails() {
             <h2 className="text-xl md:text-2xl font-semibold mb-4 text-slate-900">
               Products
             </h2>
-            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {products.map((product) => (
-                <Link
-                  key={product._id}
-                  href={`/products/${product._id}`}
-                  className="group rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden hover:-translate-y-1 hover:shadow-md transition duration-300 block"
-                >
-                  <article>
-                    <div className="h-80 w-full overflow-hidden bg-slate-100">
-                      <img
-                        src={product.imageCover}
-                        alt={product.title}
-                        className="h-full w-full object-cover group-hover:scale-110 group-hover:opacity-90 transition duration-300"
-                      />
-                    </div>
-                    <div className="p-4 flex flex-col gap-2">
-                      <h3
-                        className="text-sm font-semibold line-clamp-2 text-slate-900"
-                        title={product.title}
-                      >
-                        {product.title}
-                      </h3>
-                      <p className="text-emerald-500 font-semibold text-sm">
-                        {product.price} EGP
-                      </p>
-                      {product.ratingsAverage && (
-                        <p className="text-xs text-slate-500">
-                          Rating: {product.ratingsAverage.toFixed(1)} / 5
-                        </p>
-                      )}
-                    </div>
-                  </article>
-                </Link>
+                <ProductCard key={product._id} product={product} />
               ))}
             </div>
           </section>
