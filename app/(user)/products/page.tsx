@@ -8,7 +8,11 @@ import {addToCart} from '../../_api/cart'
 import {FiFilter, FiX, FiChevronDown, FiSearch} from 'react-icons/fi'
 import {ProductCard} from '@/app/_components/product-card'
 import {useSearchParams, useRouter, usePathname} from 'next/navigation'
-import {useProducts, useSubcategories} from '../../_hooks/use-api-query'
+import {
+  useProducts,
+  useSubcategories,
+  useAutoRefreshAll
+} from '../../_hooks/use-api-query'
 import {Subcategory} from '@/app/_api/products'
 type FilterOptions = {
   category: string[]
@@ -23,7 +27,6 @@ type FilterOptions = {
 
 export default function Products() {
   const [error, setError] = useState<string | null>(null)
-  const [addingId, setAddingId] = useState<string | null>(null)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [categories, setCategories] = useState<{_id: string; name: string}[]>(
     []
@@ -32,7 +35,6 @@ export default function Products() {
     Subcategory[]
   >([])
   const [brands, setBrands] = useState<{_id: string; name: string}[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
 
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -41,6 +43,9 @@ export default function Products() {
   // Call hooks at component level
   const productsQuery = useProducts()
   const subcategoriesQuery = useSubcategories()
+
+  // Enable auto-refresh for all data
+  useAutoRefreshAll()
 
   // Use data directly from hooks
   const products = productsQuery.data || []
@@ -169,10 +174,10 @@ export default function Products() {
     } else {
       setFilteredSubcategories(subcategories)
     }
-  }, [filters.category, subcategories])
+  }, [filters.category, subcategories, filters.subcategory, handleFilterChange])
 
-  // Apply filters and sorting
-  useEffect(() => {
+  // Apply filters and sorting - computed value
+  const filteredProducts = useMemo(() => {
     let result = [...products]
 
     // Apply search filter
@@ -244,7 +249,7 @@ export default function Products() {
       }
     })
 
-    setFilteredProducts(result)
+    return result
   }, [products, filters])
 
   // Calculate price range for the price filter
@@ -256,19 +261,6 @@ export default function Products() {
       max: Math.ceil(Math.max(...prices) / 100) * 100 // Round up to nearest 100
     }
   }, [products])
-
-  // Handle add to cart
-  const handleAddToCart = async (productId: string) => {
-    try {
-      setAddingId(productId)
-      await addToCart(productId)
-      // Optional: Show success message or update cart count
-    } catch (error) {
-      console.error('Failed to add to cart:', error)
-    } finally {
-      setAddingId(null)
-    }
-  }
 
   // Clear all filters
   const clearFilters = () => {
@@ -290,14 +282,14 @@ export default function Products() {
     <main className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-rose-50 py-8 md:py-12 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Hero Header */}
-        <header className="text-center mb-12 mobile-card">
+        <header className="text-center mb-6 md:mb-12 mobile-card mobile-safe-top">
           <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-rose-100 to-pink-100 rounded-2xl mb-6 mobile-shadow">
             <i className="fa-solid fa-store text-2xl md:text-3xl text-rose-500"></i>
           </div>
           <p className="text-sm md:text-base uppercase tracking-[0.2em] text-rose-500 font-semibold mb-3">
             Premium Collection
           </p>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-slate-900 mb-4 mobile-text">
+          <h1 className="text-2xl md:text-5xl font-bold tracking-tight text-slate-900 mb-3 md:mb-4 mobile-text">
             Discover Amazing Products
           </h1>
           <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto mobile-text">
@@ -310,7 +302,7 @@ export default function Products() {
           {/* Mobile filter button */}
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="lg:hidden flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-xl mobile-card mobile-shadow hover:shadow-lg mobile-transition"
+            className="lg:hidden flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 rounded-xl mobile-card mobile-shadow hover:shadow-lg mobile-transition mobile-button"
           >
             <FiFilter className="text-rose-500" />
             <span className="font-medium">Filters</span>
@@ -318,7 +310,7 @@ export default function Products() {
               filters.subcategory.length > 0 ||
               filters.brand.length > 0 ||
               filters.search) && (
-              <span className="bg-rose-500 text-white text-xs px-2 py-1 rounded-full">
+              <span className="bg-rose-500 text-white text-xs px-2 py-1 rounded-full mobile-badge">
                 {filters.category.length +
                   filters.subcategory.length +
                   filters.brand.length +
@@ -333,7 +325,7 @@ export default function Products() {
               isFilterOpen ? 'block' : 'hidden'
             } lg:block w-full lg:w-80 flex-shrink-0`}
           >
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 mobile-shadow-lg sticky top-6 mobile-card">
+            <div className="bg-white p-3 md:p-6 rounded-2xl border border-slate-200 mobile-shadow-lg sticky top-6 mobile-card mobile-filter">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-lg font-bold text-slate-900">Filters</h2>
                 <button
@@ -349,7 +341,7 @@ export default function Products() {
                 <label className="block text-sm font-semibold text-slate-700 mb-3">
                   Search Products
                 </label>
-                <div className="relative">
+                <div className="relative mobile-search">
                   <input
                     type="text"
                     value={filters.search}
@@ -357,9 +349,9 @@ export default function Products() {
                       handleFilterChange('search', e.target.value)
                     }
                     placeholder="Search for products..."
-                    className="w-full px-4 py-3 pr-12 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 mobile-transition"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 mobile-form mobile-price-input"
                   />
-                  <FiSearch className="absolute right-4 top-4 text-slate-400" />
+                  <FiSearch className="absolute right-4 top-4 text-slate-400 mobile-search-icon" />
                 </div>
               </div>
 
@@ -368,19 +360,22 @@ export default function Products() {
                 <h3 className="text-sm font-semibold text-slate-700 mb-3">
                   Categories
                 </h3>
-                <div className="space-y-3 max-h-48 overflow-y-auto mobile-grid">
+                <div className="space-y-3 max-h-48 overflow-y-auto mobile-grid mobile-scroll">
                   {categories.map((category) => (
-                    <div key={category._id} className="flex items-center">
+                    <div
+                      key={category._id}
+                      className="flex items-center mobile-list-item"
+                    >
                       <input
                         type="checkbox"
                         id={`cat-${category._id}`}
                         checked={filters.category.includes(category._id)}
                         onChange={() => toggleCategory(category._id)}
-                        className="h-4 w-4 rounded border-slate-300 text-rose-500 focus:ring-rose-500"
+                        className="h-4 w-4 rounded border-slate-300 text-rose-500 focus:ring-rose-500 mobile-checkbox"
                       />
                       <label
                         htmlFor={`cat-${category._id}`}
-                        className="ml-3 text-sm text-slate-700 cursor-pointer mobile-text"
+                        className="ml-3 text-sm text-slate-700 cursor-pointer mobile-text mobile-touch"
                       >
                         {category.name}
                       </label>
@@ -394,19 +389,22 @@ export default function Products() {
                 <h3 className="text-sm font-semibold text-slate-700 mb-3">
                   Subcategories
                 </h3>
-                <div className="space-y-3 max-h-48 overflow-y-auto mobile-grid">
+                <div className="space-y-3 max-h-48 overflow-y-auto mobile-grid mobile-scroll">
                   {filteredSubcategories.map((subcategory) => (
-                    <div key={subcategory._id} className="flex items-center">
+                    <div
+                      key={subcategory._id}
+                      className="flex items-center mobile-list-item"
+                    >
                       <input
                         type="checkbox"
                         id={`subcat-${subcategory._id}`}
                         checked={filters.subcategory.includes(subcategory._id)}
                         onChange={() => toggleSubcategory(subcategory._id)}
-                        className="h-4 w-4 rounded border-slate-300 text-rose-500 focus:ring-rose-500"
+                        className="h-4 w-4 rounded border-slate-300 text-rose-500 focus:ring-rose-500 mobile-checkbox"
                       />
                       <label
                         htmlFor={`subcat-${subcategory._id}`}
-                        className="ml-3 text-sm text-slate-700 cursor-pointer mobile-text"
+                        className="ml-3 text-sm text-slate-700 cursor-pointer mobile-text mobile-touch"
                       >
                         {subcategory.name}
                       </label>
@@ -420,19 +418,22 @@ export default function Products() {
                 <h3 className="text-sm font-semibold text-slate-700 mb-3">
                   Brands
                 </h3>
-                <div className="space-y-3 max-h-48 overflow-y-auto mobile-grid">
+                <div className="space-y-3 max-h-48 overflow-y-auto mobile-grid mobile-scroll">
                   {brands.map((brand) => (
-                    <div key={brand._id} className="flex items-center">
+                    <div
+                      key={brand._id}
+                      className="flex items-center mobile-list-item"
+                    >
                       <input
                         type="checkbox"
                         id={`brand-${brand._id}`}
                         checked={filters.brand.includes(brand._id)}
                         onChange={() => toggleBrand(brand._id)}
-                        className="h-4 w-4 rounded border-slate-300 text-rose-500 focus:ring-rose-500"
+                        className="h-4 w-4 rounded border-slate-300 text-rose-500 focus:ring-rose-500 mobile-checkbox"
                       />
                       <label
                         htmlFor={`brand-${brand._id}`}
-                        className="ml-3 text-sm text-slate-700 cursor-pointer mobile-text"
+                        className="ml-3 text-sm text-slate-700 cursor-pointer mobile-text mobile-touch"
                       >
                         {brand.name}
                       </label>
@@ -458,7 +459,7 @@ export default function Products() {
                         handleFilterChange('minPrice', e.target.value)
                       }
                       placeholder={priceRange.min.toString()}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 mobile-form"
                     />
                   </div>
                   <div>
@@ -472,7 +473,7 @@ export default function Products() {
                         handleFilterChange('maxPrice', e.target.value)
                       }
                       placeholder={priceRange.max.toString()}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 mobile-form"
                     />
                   </div>
                 </div>
@@ -483,7 +484,7 @@ export default function Products() {
                 <h3 className="text-sm font-semibold text-slate-700 mb-3">
                   Availability
                 </h3>
-                <div className="flex items-center">
+                <div className="flex items-center mobile-list-item">
                   <input
                     type="checkbox"
                     id="inStock"
@@ -491,11 +492,11 @@ export default function Products() {
                     onChange={(e) =>
                       handleFilterChange('inStock', e.target.checked)
                     }
-                    className="h-4 w-4 rounded border-slate-300 text-rose-500 focus:ring-rose-500"
+                    className="h-4 w-4 rounded border-slate-300 text-rose-500 focus:ring-rose-500 mobile-checkbox"
                   />
                   <label
                     htmlFor="inStock"
-                    className="ml-3 text-sm text-slate-700 cursor-pointer mobile-text"
+                    className="ml-3 text-sm text-slate-700 cursor-pointer mobile-text mobile-touch"
                   >
                     In Stock Only
                   </label>
@@ -515,7 +516,7 @@ export default function Products() {
                       e.target.value as FilterOptions['sortBy']
                     )
                   }
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 mobile-form"
                 >
                   <option value="newest">Newest First</option>
                   <option value="price-asc">Price: Low to High</option>
@@ -529,7 +530,7 @@ export default function Products() {
           {/* Main Content */}
           <div className="flex-1">
             {/* Results Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 md:mb-8 gap-4">
               <div>
                 <p className="text-2xl font-bold text-slate-900 mobile-text">
                   {filteredProducts.length}{' '}

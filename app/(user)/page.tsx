@@ -10,8 +10,12 @@ import {Category} from '../_api/categories'
 import {ProductCard} from '../_components/product-card'
 import {Pagination, Autoplay} from 'swiper/modules'
 import Link from 'next/link'
+import {useAutoRefreshAll} from '../_hooks/use-api-query'
 
 export default function Home() {
+  // Enable auto-refresh for all data
+  useAutoRefreshAll()
+
   const [categories, setCategories] = useState<Category[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [error, setError] = useState<string | null>(null)

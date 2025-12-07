@@ -19,9 +19,9 @@ export function useApiQuery<T>(
     queryFn,
     staleTime: options?.staleTime || 60 * 1000,
     select: options?.select,
-    refetchInterval: options?.refetchInterval,
-    refetchOnWindowFocus: options?.refetchOnWindowFocus,
-    refetchOnReconnect: options?.refetchOnReconnect
+    refetchInterval: options?.refetchInterval || 30 * 1000, // Auto-refresh every 30 seconds by default
+    refetchOnWindowFocus: options?.refetchOnWindowFocus !== false, // Enable by default
+    refetchOnReconnect: options?.refetchOnReconnect !== false // Enable by default
   })
 }
 
@@ -49,7 +49,12 @@ export function useGlobalRefresh() {
   const queryClient = useQueryClient()
 
   const refreshAll = () => {
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries({queryKey: ['cart']})
+    queryClient.invalidateQueries({queryKey: ['products']})
+    queryClient.invalidateQueries({queryKey: ['categories']})
+    queryClient.invalidateQueries({queryKey: ['subcategories']})
+    queryClient.invalidateQueries({queryKey: ['brands']})
+    queryClient.invalidateQueries({queryKey: ['wishlist']})
   }
 
   const refreshCart = () => {
@@ -68,12 +73,17 @@ export function useGlobalRefresh() {
     queryClient.invalidateQueries({queryKey: ['brands']})
   }
 
+  const refreshWishlist = () => {
+    queryClient.invalidateQueries({queryKey: ['wishlist']})
+  }
+
   return {
     refreshAll,
     refreshCart,
     refreshProducts,
     refreshCategories,
-    refreshBrands
+    refreshBrands,
+    refreshWishlist
   }
 }
 
@@ -154,7 +164,9 @@ export function useProduct(id: string) {
     () => import('../_api/products').then((m) => m.getAllProducts()),
     {
       select: (data) => data?.data,
-      staleTime: 5 * 60 * 1000
+      staleTime: 5 * 60 * 1000,
+      refetchInterval: 60 * 1000, // Refresh every minute for single product
+      refetchOnWindowFocus: true
     }
   )
 }
@@ -167,7 +179,9 @@ export function useCategories() {
     {
       select: (data) => data?.data || [],
       staleTime: 5 * 60 * 1000,
-      refetchInterval: 2 * 60 * 1000
+      refetchInterval: 2 * 60 * 1000, // Refresh every 2 minutes
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true
     }
   )
 }
@@ -180,7 +194,9 @@ export function useSubcategories() {
     {
       select: (data) => data?.data || [],
       staleTime: 5 * 60 * 1000,
-      refetchInterval: 2 * 60 * 1000
+      refetchInterval: 2 * 60 * 1000, // Refresh every 2 minutes
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true
     }
   )
 }
@@ -193,18 +209,65 @@ export function useBrands() {
     {
       select: (data) => data?.data || [],
       staleTime: 5 * 60 * 1000,
-      refetchInterval: 2 * 60 * 1000
+      refetchInterval: 2 * 60 * 1000, // Refresh every 2 minutes
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true
     }
   )
 }
 
 // User profile hooks - REMOVED (user.ts doesn't exist)
 
+// Wishlist hooks
+export function useWishlist() {
+  return useApiQuery(
+    ['wishlist'],
+    () => import('../_api/wishlist').then((m) => m.getWishlist()),
+    {
+      select: (data) => data?.data || [],
+      staleTime: 2 * 60 * 1000,
+      refetchInterval: 30 * 1000,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true
+    }
+  )
+}
+
+export function useRealtimeWishlist() {
+  const {data: wishlistData, isLoading, error, refetch} = useWishlist()
+  const {refreshWishlist} = useGlobalRefresh()
+
+  return {
+    wishlistItems: wishlistData || [],
+    wishlistCount: wishlistData?.length || 0,
+    isLoading,
+    error,
+    refreshWishlist,
+    refetch
+  }
+}
+
+export function useAddToWishlist() {
+  return useApiMutation(
+    (productId: string) =>
+      import('../_api/wishlist').then((m) => m.addToWishlist(productId)),
+    [['wishlist']]
+  )
+}
+
+export function useRemoveFromWishlist() {
+  return useApiMutation(
+    (itemId: string) =>
+      import('../_api/wishlist').then((m) => m.removeFromWishlist(itemId)),
+    [['wishlist']]
+  )
+}
+
 // Auto-refresh hook for all data
 export function useAutoRefreshAll() {
   const {refreshAll} = useGlobalRefresh()
 
-  // Refresh on window focus
+  // Refresh on window focus and reconnect
   useApiQuery(
     ['auto-refresh'],
     async () => {
@@ -214,6 +277,7 @@ export function useAutoRefreshAll() {
     {
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
+      refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
       staleTime: 30 * 1000
     }
   )

@@ -113,7 +113,7 @@ export default function CartPage() {
 
         {isLoading ? (
           <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
+            {[...Array(items.length || 3)].map((_, i) => (
               <div
                 key={i}
                 className="flex gap-4 bg-white border border-slate-200 rounded-xl p-4 items-center shadow-sm animate-pulse"

@@ -11,15 +11,17 @@ import {
   FiGrid,
   FiLogOut,
   FiMenu,
-  FiX
+  FiX,
+  FiHeart
 } from 'react-icons/fi'
-import {useRealtimeCart} from '@/app/_hooks/use-api-query'
+import {useRealtimeCart, useRealtimeWishlist} from '@/app/_hooks/use-api-query'
 import SearchBar from './SearchBar'
 
 export default function Navigation() {
   const pathname = usePathname()
   const router = useRouter()
   const {cartCount} = useRealtimeCart()
+  const {wishlistCount} = useRealtimeWishlist()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const handleLogout = async () => {
@@ -44,6 +46,7 @@ export default function Navigation() {
     {href: '/products', label: 'Products', icon: FiPackage},
     {href: '/categories', label: 'Categories', icon: FiGrid},
     {href: '/brands', label: 'Brands', icon: FiGrid},
+    {href: '/wishlist', label: 'Wishlist', icon: FiHeart, badge: wishlistCount},
     {href: '/cart', label: 'Cart', icon: FiShoppingCart, badge: cartCount},
     {href: '/profile', label: 'Profile', icon: FiUser}
   ]

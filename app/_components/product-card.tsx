@@ -6,9 +6,17 @@ import Link from 'next/link'
 import {Product} from '@/types'
 import {cn} from '@/lib/utils'
 import {Button} from './ui/button'
-import {ShoppingCart, Trash2} from 'lucide-react'
+import {ShoppingCart, Trash2, Heart} from 'lucide-react'
 import {useGlobalState} from '../_contexts/global-state-context'
-import {useAddToCart, useRemoveFromCart} from '../_hooks/use-api-query'
+import {
+  useAddToCart,
+  useRemoveFromCart,
+  useRealtimeCart,
+  useAddToWishlist,
+  useRemoveFromWishlist,
+  useRealtimeWishlist
+} from '../_hooks/use-api-query'
+import {updateCartItemCount} from '../_api/cart'
 
 interface ProductCardProps
   extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -17,14 +25,37 @@ interface ProductCardProps
 }
 
 export function ProductCard({product, className, ...props}: ProductCardProps) {
-  const {state} = useGlobalState()
+  // Safety check for undefined product
+  if (!product || !product._id) {
+    return null
+  }
+
+  const {cartItems} = useRealtimeCart()
   const addToCartMutation = useAddToCart()
   const removeFromCartMutation = useRemoveFromCart()
+  const {state} = useGlobalState()
 
-  const cartItem = state.cart.items.find(
-    (item) => item.product._id === product._id
-  )
-  const isInCart = !!cartItem
+  // Wishlist hooks
+  const {wishlistItems} = useRealtimeWishlist()
+  const addToWishlistMutation = useAddToWishlist()
+  const removeFromWishlistMutation = useRemoveFromWishlist()
+
+  const cartItem = cartItems.find((item) => item.product._id === product._id)
+  const isCartIn = !!cartItem
+
+  // Check if product is in wishlist by looking at the wishlist items
+  const isInWishlist =
+    wishlistItems && Array.isArray(wishlistItems)
+      ? wishlistItems.some((item: any) => {
+          if (!item) return false
+          // Handle both nested product structure and direct product structure
+          return (
+            (item.product && item.product._id === product._id) ||
+            item._id === product._id ||
+            item.id === product._id
+          )
+        })
+      : false
   const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   const handleAddToCart = async (productId: string) => {
@@ -33,10 +64,39 @@ export function ProductCard({product, className, ...props}: ProductCardProps) {
     setUpdatingId(null)
   }
 
+  const handleWishlistAction = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setUpdatingId(product._id)
+
+    try {
+      if (isInWishlist && wishlistItems && Array.isArray(wishlistItems)) {
+        // Find the wishlist item and remove it
+        const wishlistItem = wishlistItems.find((item: any) => {
+          if (!item) return false
+          return (
+            (item.product && item.product._id === product._id) ||
+            item._id === product._id ||
+            item.id === product._id
+          )
+        })
+        if (wishlistItem && wishlistItem._id) {
+          await removeFromWishlistMutation.mutateAsync(wishlistItem._id)
+        }
+      } else {
+        await addToWishlistMutation.mutateAsync(product._id)
+      }
+    } catch (error) {
+      console.error('Wishlist action failed:', error)
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
   const handleCartAction = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (isInCart && cartItem) {
+    if (isCartIn && cartItem) {
       setUpdatingId(product._id)
       await removeFromCartMutation.mutateAsync(product._id)
       setUpdatingId(null)
@@ -51,7 +111,8 @@ export function ProductCard({product, className, ...props}: ProductCardProps) {
     if (newCount < 1) return
 
     setUpdatingId(product._id)
-    // Will implement with useUpdateCartItem if needed
+
+    updateCartItemCount(product._id, newCount)
     setUpdatingId(null)
   }
 
@@ -87,6 +148,22 @@ export function ProductCard({product, className, ...props}: ProductCardProps) {
                   % OFF
                 </div>
               )}
+
+            {/* Wishlist Button */}
+            <button
+              type="button"
+              onClick={handleWishlistAction}
+              disabled={updatingId === product._id}
+              className={`absolute top-3 left-3 h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                isInWishlist
+                  ? 'bg-rose-500 text-white shadow-lg'
+                  : 'bg-white/90 text-slate-600 shadow-md hover:bg-white hover:text-rose-500'
+              } disabled:opacity-50 disabled:cursor-not-allowed mobile-touch`}
+            >
+              <Heart
+                className={`h-4 w-4 ${isInWishlist ? 'fill-current' : ''}`}
+              />
+            </button>
           </div>
 
           <div className="px-1 flex-1 flex flex-col">
@@ -135,7 +212,7 @@ export function ProductCard({product, className, ...props}: ProductCardProps) {
             )}
 
             <div className="mt-auto">
-              {isInCart && cartItem ? (
+              {isCartIn && cartItem ? (
                 <div className="flex items-center gap-2">
                   <button
                     type="button"

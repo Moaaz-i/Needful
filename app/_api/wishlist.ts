@@ -1,0 +1,44 @@
+// API functions for wishlist operations
+import Api from './api'
+
+export interface WishlistItem {
+  _id: string
+  product: any
+  user: string
+  createdAt: string
+}
+
+// Get user's wishlist
+export async function getWishlist(): Promise<{
+  data: WishlistItem[]
+  count: number
+}> {
+  try {
+    const response = await Api().get('/wishlist')
+    return response.data
+  } catch (error) {
+    console.error('Error fetching wishlist:', error)
+    throw error
+  }
+}
+
+// Add product to wishlist
+export async function addToWishlist(productId: string): Promise<WishlistItem> {
+  try {
+    const response = await Api().post('/wishlist', {productId})
+    return response.data.data
+  } catch (error) {
+    console.error('Error adding to wishlist:', error)
+    throw error
+  }
+}
+
+// Remove item from wishlist
+export async function removeFromWishlist(itemId: string): Promise<void> {
+  try {
+    await Api().delete(`/wishlist/${itemId}`)
+  } catch (error) {
+    console.error('Error removing from wishlist:', error)
+    throw error
+  }
+}
