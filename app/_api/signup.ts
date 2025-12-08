@@ -25,15 +25,28 @@ export type AuthResponse = {
   }
 }
 
-export async function signup(payload: SignupPayload): Promise<AuthResponse> {
-  const api = Api()
+export async function signup(
+  payload: SignupPayload,
+  customBaseUrl?: string
+): Promise<AuthResponse> {
+  const api = Api(customBaseUrl)
 
   const res = await api.post<AuthResponse>('/auth/signup', payload)
   return res.data
 }
 
-export async function login(payload: LoginPayload): Promise<AuthResponse> {
-  const response = await fetch(apiEndpoints.auth.signin, {
+export async function login(
+  payload: LoginPayload,
+  customBaseUrl?: string
+): Promise<AuthResponse> {
+  const baseUrl =
+    customBaseUrl ||
+    (typeof window !== 'undefined' ? window.location.origin : '')
+  const loginUrl = baseUrl
+    ? `${baseUrl}/api/v1/auth/signin`
+    : apiEndpoints.auth.signin
+
+  const response = await fetch(loginUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -49,9 +62,10 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
 }
 
 export async function loginWithProxy(
-  payload: LoginPayload
+  payload: LoginPayload,
+  customBaseUrl?: string
 ): Promise<AuthResponse> {
-  const api = Api()
+  const api = Api(customBaseUrl)
   const res = await api.post<AuthResponse>('/auth/signin', payload)
   return res.data
 }

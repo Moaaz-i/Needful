@@ -18,9 +18,9 @@ export function unsubscribeFromLoading(listener: (count: number) => void) {
   loadingListeners.delete(listener)
 }
 
-export default function Api() {
+export default function Api(baseURL?: string) {
   const api = axios.create({
-    baseURL: '/api/proxy',
+    baseURL: baseURL || '/api/proxy',
     headers: {
       'Content-Type': 'application/json'
     }
