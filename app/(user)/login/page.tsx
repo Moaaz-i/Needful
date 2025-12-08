@@ -59,18 +59,12 @@ export default function Login() {
     setIsLoading(true)
 
     try {
-      const result = await signIn(
-        'credentials',
-        {
-          email: data.email,
-          password: data.password,
-          callbackUrl: '/',
-          redirect: false // Don't redirect automatically
-        },
-        {
-          baseUrl: 'http://localhost:3000/api/custom/auth'
-        }
-      )
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        callbackUrl: '/',
+        redirect: false // Don't redirect automatically
+      })
 
       console.log('SignIn result:', result)
 
