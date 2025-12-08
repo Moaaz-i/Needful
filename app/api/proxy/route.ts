@@ -1,4 +1,5 @@
 import {NextRequest, NextResponse} from 'next/server'
+import {apiEndpoints} from '@/lib/config'
 
 export async function GET(request: NextRequest) {
   const {searchParams} = new URL(request.url)
@@ -10,16 +11,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      `https://ecommerce.routemisr.com/api/v1${endpoint}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          token: request.headers.get('token') || ''
-        }
+    const response = await fetch(`${apiEndpoints.base}${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        token: request.headers.get('token') || ''
       }
-    )
+    })
 
     const data = await response.json()
     return NextResponse.json(data)
@@ -38,17 +36,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      `https://ecommerce.routemisr.com/api/v1${endpoint}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          token: request.headers.get('token') || ''
-        },
-        body: JSON.stringify(body)
-      }
-    )
+    const response = await fetch(`${apiEndpoints.base}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        token: request.headers.get('token') || ''
+      },
+      body: JSON.stringify(body)
+    })
 
     const data = await response.json()
     return NextResponse.json(data)
@@ -67,17 +62,14 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      `https://ecommerce.routemisr.com/api/v1${endpoint}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          token: request.headers.get('token') || ''
-        },
-        body: JSON.stringify(body)
-      }
-    )
+    const response = await fetch(`${apiEndpoints.base}${endpoint}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        token: request.headers.get('token') || ''
+      },
+      body: JSON.stringify(body)
+    })
 
     const data = await response.json()
     return NextResponse.json(data)
@@ -95,16 +87,13 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      `https://ecommerce.routemisr.com/api/v1${endpoint}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          token: request.headers.get('token') || ''
-        }
+    const response = await fetch(`${apiEndpoints.base}${endpoint}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        token: request.headers.get('token') || ''
       }
-    )
+    })
 
     const data = await response.json()
     return NextResponse.json(data)

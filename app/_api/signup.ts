@@ -1,4 +1,5 @@
 import Api from './api'
+import {apiEndpoints} from '@/lib/config'
 
 export type SignupPayload = {
   name: string
@@ -32,16 +33,13 @@ export async function signup(payload: SignupPayload): Promise<AuthResponse> {
 }
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
-  const response = await fetch(
-    'https://ecommerce.routemisr.com/api/v1/auth/signin',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    }
-  )
+  const response = await fetch(apiEndpoints.auth.signin, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
 
   if (!response.ok) {
     throw new Error('Login failed')

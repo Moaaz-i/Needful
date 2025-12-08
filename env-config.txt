@@ -1,0 +1,11 @@
+# API Configuration
+NEXT_PUBLIC_API_URL=https://ecommerce.routemisr.com
+
+# NextAuth Configuration  
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key-here-change-in-production
+
+# For Production Deployment:
+# NEXT_PUBLIC_API_URL=https://your-api-domain.com
+# NEXTAUTH_URL=https://your-domain.com
+# NEXTAUTH_SECRET=your-production-secret-key-here
