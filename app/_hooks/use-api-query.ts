@@ -105,11 +105,6 @@ export function useRealtimeCart() {
   const {data: cartData, isLoading, error, refetch} = useCart()
   const {refreshCart} = useGlobalRefresh()
 
-  // Debug logging
-  console.log('Cart data updated:', cartData)
-  console.log('Cart count:', cartData?.numOfCartItems)
-  console.log('Is loading:', isLoading)
-
   return {
     cartItems: cartData?.data?.products || [],
     cartCount: cartData?.numOfCartItems || 0,

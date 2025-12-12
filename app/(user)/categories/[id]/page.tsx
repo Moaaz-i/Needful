@@ -8,6 +8,7 @@ import {
   getSubCategoryByCategoryId,
   SubCategory
 } from '../../../_api/subcategories'
+import LoadingSpinner from '../../../_components/LoadingSpinner'
 
 export default function CategoryDetails() {
   const params = useParams()
@@ -16,6 +17,7 @@ export default function CategoryDetails() {
   const [category, setCategory] = useState<Category | null>(null)
   const [subCategories, setSubCategories] = useState<SubCategory[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -23,6 +25,7 @@ export default function CategoryDetails() {
     let mounted = true
 
     const fetchData = async () => {
+      setLoading(true)
       try {
         const [categoryData, subCategoriesData] = await Promise.all([
           getCategoryById(id),
@@ -39,6 +42,7 @@ export default function CategoryDetails() {
         )
       } finally {
         if (!mounted) return
+        setLoading(false)
       }
     }
 
@@ -64,13 +68,19 @@ export default function CategoryDetails() {
           </Link>
         </div>
 
+        {loading && (
+          <div className="flex justify-center py-20">
+            <LoadingSpinner size="lg" text="Loading category details..." />
+          </div>
+        )}
+
         {error && (
           <div className="max-w-md mx-auto bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-4 text-center text-sm">
             {error}
           </div>
         )}
 
-        {!error && category && (
+        {!loading && !error && category && (
           <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-10">
             {category.image && (
               <div className="h-2/4 w-full overflow-hidden bg-slate-100">
@@ -109,7 +119,7 @@ export default function CategoryDetails() {
           </section>
         )}
 
-        {!error && subCategories.length > 0 && (
+        {!loading && !error && subCategories.length > 0 && (
           <section>
             <h2 className="text-xl md:text-2xl font-semibold mb-4 text-slate-900">
               SubCategories
@@ -140,7 +150,7 @@ export default function CategoryDetails() {
           </section>
         )}
 
-        {!error && !category && (
+        {!loading && !error && !category && (
           <div className="text-center text-slate-500 text-sm py-10">
             Category not found.
           </div>

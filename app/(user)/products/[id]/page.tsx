@@ -17,6 +17,7 @@ import {Swiper, SwiperSlide} from 'swiper/react'
 import 'swiper/css'
 import {Pagination, Autoplay} from 'swiper/modules'
 import {Heart, ShoppingCart} from 'lucide-react'
+import LoadingSpinner from '../../../_components/LoadingSpinner'
 
 export default function ProductDetails() {
   const params = useParams()
@@ -26,6 +27,7 @@ export default function ProductDetails() {
   const [error, setError] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
   const [addError, setAddError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   // Wishlist and Cart hooks
   const {wishlistItems} = useRealtimeWishlist()
@@ -134,6 +136,7 @@ export default function ProductDetails() {
     let mounted = true
 
     const fetchProduct = async () => {
+      setLoading(true)
       try {
         const data = await getProductById(id)
         if (!mounted) return
@@ -145,6 +148,7 @@ export default function ProductDetails() {
         )
       } finally {
         if (!mounted) return
+        setLoading(false)
       }
     }
 
@@ -171,13 +175,19 @@ export default function ProductDetails() {
           </button>
         </div>
 
+        {loading && (
+          <div className="flex justify-center py-20">
+            <LoadingSpinner size="lg" text="Loading product details..." />
+          </div>
+        )}
+
         {error && (
           <div className="max-w-md mx-auto bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-4 text-center text-sm">
             {error}
           </div>
         )}
 
-        {!error && product && (
+        {!loading && !error && product && (
           <div className="grid gap-8">
             <div className="grid gap-8 md:grid-cols-[1.2fr,1fr] items-start">
               <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
@@ -203,7 +213,7 @@ export default function ProductDetails() {
                           <img
                             src={image}
                             alt={`${product.title} - ${index + 1}`}
-                            className="h-full w-full object-contain"
+                            className="h-full w-full object-center"
                           />
                         </SwiperSlide>
                       )
@@ -464,7 +474,7 @@ export default function ProductDetails() {
           </div>
         )}
 
-        {!error && !product && (
+        {!loading && !error && !product && (
           <div className="text-center text-slate-300 text-sm py-10">
             Product not found.
           </div>

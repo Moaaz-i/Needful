@@ -5,6 +5,7 @@ import {useParams} from 'next/navigation'
 import Link from 'next/link'
 import {getBrandById, Brand} from '../../../_api/brands'
 import {getProductsByCategory} from '../../../_api/products'
+import LoadingSpinner from '../../../_components/LoadingSpinner'
 
 export default function BrandDetails() {
   const params = useParams()
@@ -12,6 +13,7 @@ export default function BrandDetails() {
 
   const [brand, setBrand] = useState<Brand | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -19,6 +21,7 @@ export default function BrandDetails() {
     let mounted = true
 
     const fetchBrand = async () => {
+      setLoading(true)
       try {
         const data = await getBrandById(id)
         if (!mounted) return
@@ -30,6 +33,7 @@ export default function BrandDetails() {
         )
       } finally {
         if (!mounted) return
+        setLoading(false)
       }
     }
 
@@ -55,13 +59,19 @@ export default function BrandDetails() {
           </Link>
         </div>
 
+        {loading && (
+          <div className="flex justify-center py-20">
+            <LoadingSpinner size="lg" text="Loading brand details..." />
+          </div>
+        )}
+
         {error && (
           <div className="max-w-md mx-auto bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-4 text-center text-sm">
             {error}
           </div>
         )}
 
-        {!error && brand && (
+        {!loading && !error && brand && (
           <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-10">
             <div className="h-56 w-full overflow-hidden bg-slate-100 flex items-center justify-center">
               <img
@@ -78,7 +88,7 @@ export default function BrandDetails() {
           </section>
         )}
 
-        {!error && !brand && (
+        {!loading && !error && !brand && (
           <div className="text-center text-slate-500 text-sm py-10">
             Brand not found.
           </div>
