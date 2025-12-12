@@ -167,7 +167,7 @@ export function ProductCard({product, className, ...props}: ProductCardProps) {
           </div>
 
           <div className="px-1 flex-1 flex flex-col">
-            <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2 mobile-text">
+            <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2 mobile-text h-6 leading-6">
               {product.title}
             </h3>
 

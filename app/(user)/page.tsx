@@ -115,7 +115,9 @@ export default function Home() {
                   </div>
                 </SwiperSlide>
               ))
-            : categories.map((category) => (
+            : categories &&
+              categories.length > 0 &&
+              categories.map((category) => (
                 <SwiperSlide key={category._id} className="w-auto!">
                   <Link
                     key={category._id}
@@ -196,9 +198,11 @@ export default function Home() {
         ) : (
           !error && (
             <section className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
-              {products.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
+              {products &&
+                products.length > 0 &&
+                products.map((product) => (
+                  <ProductCard key={product._id} product={product} />
+                ))}
             </section>
           )
         )}

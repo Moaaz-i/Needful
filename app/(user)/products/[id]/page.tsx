@@ -29,6 +29,41 @@ export default function ProductDetails() {
   const [addError, setAddError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Helper function to format large numbers
+  const formatLargeNumber = (num: number) => {
+    // Convert to string and handle scientific notation
+    const numStr = num.toExponential()
+
+    if (numStr.includes('e')) {
+      const parts = numStr.split('e')
+      const mantissa = parseFloat(parts[0])
+      const exponent = parseInt(parts[1])
+
+      // Calculate the actual number in billions
+      const billions = mantissa * Math.pow(10, exponent - 9)
+
+      if (exponent >= 9) {
+        return Math.round(billions) + 'B'
+      } else if (exponent >= 6) {
+        return Math.round(mantissa * Math.pow(10, exponent - 6)) + 'M'
+      } else if (exponent >= 3) {
+        return Math.round(mantissa * Math.pow(10, exponent - 3)) + 'K'
+      }
+    }
+
+    // Handle normal numbers
+    if (num >= 1000000000) {
+      return Math.round(num / 1000000000) + 'B'
+    }
+    if (num >= 1000000) {
+      return Math.round(num / 1000000) + 'M'
+    }
+    if (num >= 1000) {
+      return Math.round(num / 1000) + 'K'
+    }
+    return num.toString()
+  }
+
   // Wishlist and Cart hooks
   const {wishlistItems} = useRealtimeWishlist()
   const {cartItems} = useRealtimeCart()
@@ -161,7 +196,7 @@ export default function ProductDetails() {
 
   return (
     <main className="py-10 px-4">
-      <div className="max-w-xl mx-auto">
+      <div className="max-w-lg mx-auto ">
         <div className="mb-6">
           <button
             type="button"
@@ -190,11 +225,10 @@ export default function ProductDetails() {
         {!loading && !error && product && (
           <div className="grid gap-8">
             <div className="grid gap-8 md:grid-cols-[1.2fr,1fr] items-start">
-              <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                <div className="h-[480px] w-full overflow-hidden bg-slate-100">
+              <section className="rounded-2xl shadow-sm overflow-hidden ">
+                <div className="h-[480px] w-full overflow-hidden">
                   <Swiper
                     slidesPerView={'auto'}
-                    spaceBetween={16}
                     className="w-full h-full p-0"
                     loop={true}
                     pagination={{
@@ -295,9 +329,12 @@ export default function ProductDetails() {
                         </span>
                       </div>
                     )}
-                    <span className="text-sm text-slate-500">
-                      {product.sold?.toLocaleString()} sold
+                    <span className="text-xs text-slate-400">
+                      {product.sold
+                        ? formatLargeNumber(product.sold) + ' sold'
+                        : '0 sold'}
                     </span>
+
                     <span className="text-sm text-slate-500">
                       {product.quantity} in stock
                     </span>
@@ -474,7 +511,7 @@ export default function ProductDetails() {
           </div>
         )}
 
-        {!loading && !error && !product && (
+        {!error && !product && (
           <div className="text-center text-slate-300 text-sm py-10">
             Product not found.
           </div>

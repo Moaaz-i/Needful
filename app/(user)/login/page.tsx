@@ -66,8 +66,6 @@ export default function Login() {
         redirect: false // Don't redirect automatically
       })
 
-      console.log('SignIn result:', result)
-
       if (result?.error) {
         // Show the actual error message from server
         const errorMessage =
@@ -130,7 +128,7 @@ export default function Login() {
                       className="rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm md:text-base outline-none transition-all duration-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 mobile-transition"
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
@@ -164,7 +162,7 @@ export default function Login() {
                       </button>
                     </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />

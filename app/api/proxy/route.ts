@@ -4,6 +4,7 @@ import {apiEndpoints} from '@/lib/config'
 export async function GET(request: NextRequest) {
   const {searchParams} = new URL(request.url)
   const endpoint = searchParams.get('endpoint')
+  const customId = searchParams.get('_custom')
 
   if (!endpoint) {
     return NextResponse.json({error: 'Missing endpoint'}, {status: 400})
