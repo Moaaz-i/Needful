@@ -21,5 +21,10 @@ export const apiEndpoints = {
     signin: `${config.apiUrl}/api/v1/auth/signin`,
     signup: `${config.apiUrl}/api/v1/auth/signup`
   },
-  base: `${config.apiUrl}/api/v1`
+  base: `${config.apiUrl}/api/v1`,
+  orders: {
+    create: `${config.apiUrl}/api/v1/orders`,
+    checkout: `${config.apiUrl}/api/v1/orders/checkout-session`,
+    getById: (id: string) => `${config.apiUrl}/api/v1/orders/${id}`
+  }
 }

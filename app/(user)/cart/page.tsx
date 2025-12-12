@@ -9,6 +9,7 @@ import {
   clearCart,
   CartItem
 } from '../../_api/cart'
+import {FiCreditCard} from 'react-icons/fi'
 
 export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>([])
@@ -82,9 +83,9 @@ export default function CartPage() {
   }
 
   return (
-    <main className="py-10 px-4">
+    <main className="py-10 px-4 mobile-cart">
       <div className="max-w-5xl mx-auto">
-        <header className="mb-8 flex items-center justify-between gap-4">
+        <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
               Cart
@@ -98,7 +99,7 @@ export default function CartPage() {
               type="button"
               onClick={handleClear}
               disabled={updatingId === 'all'}
-              className="text-xs md:text-sm px-3 py-1.5 rounded-lg border border-rose-400 text-rose-600 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-xs md:text-sm px-3 py-1.5 rounded-lg border border-rose-400 text-rose-600 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed mobile-button"
             >
               Clear cart
             </button>
@@ -153,9 +154,9 @@ export default function CartPage() {
                 items.map((item) => (
                   <div
                     key={item._id}
-                    className="flex gap-4 bg-white border border-slate-200 rounded-xl p-4 items-center shadow-sm"
+                    className="flex flex-col md:flex-row gap-4 bg-white border border-slate-200 rounded-xl p-4 items-center shadow-sm mobile-cart-item"
                   >
-                    <div className="h-24 w-24 rounded-lg overflow-hidden bg-slate-100 shrink-0 relative group">
+                    <div className="h-24 w-24 rounded-lg overflow-hidden bg-slate-100 shrink-0 relative group mobile-cart-item-image">
                       <img
                         src={item.product.imageCover}
                         alt={item.product.title}
@@ -174,12 +175,12 @@ export default function CartPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 flex flex-col gap-1.5 pr-2">
+                    <div className="flex-1 flex flex-col gap-1.5 pr-2 mobile-cart-item-details">
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <Link
                             href={`/products/${item.product._id}`}
-                            className="text-sm font-semibold text-slate-800 hover:text-rose-500 line-clamp-2"
+                            className="text-sm font-semibold text-blue-800 hover:text-rose-500 line-clamp-2"
                           >
                             {item.product.title}
                           </Link>
@@ -225,8 +226,8 @@ export default function CartPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2 text-sm">
-                      <div className="inline-flex items-center gap-2">
+                    <div className="flex flex-col items-end gap-2 text-sm mobile-cart-item-actions">
+                      <div className="inline-flex items-center gap-2 mobile-cart-quantity">
                         <button
                           type="button"
                           onClick={() => handleChangeCount(item, -1)}
@@ -262,7 +263,7 @@ export default function CartPage() {
                 ))}
             </section>
 
-            <section className="bg-white border border-slate-200 rounded-xl p-4 mt-6">
+            <section className="bg-white border border-slate-200 rounded-xl p-4 mt-6 mobile-cart-summary">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-medium text-slate-800">Order Summary</h3>
                 <span className="text-sm text-slate-500">
@@ -288,21 +289,35 @@ export default function CartPage() {
 
               <button
                 type="button"
-                className="w-full mt-6 bg-rose-500 hover:bg-rose-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                className="w-full mt-6 bg-rose-500 hover:bg-rose-600 text-white font-medium py-3 px-4 rounded-lg transition-colors mobile-cart-checkout"
               >
                 Proceed to Checkout
               </button>
 
               <div className="mt-4 text-center">
-                <p className="text-xs text-slate-500">
-                  or{' '}
+                <p className="text-xs text-slate-500 mb-3">Payment Options</p>
+                <div className="space-y-2">
+                  <Link
+                    href="/order-card"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-rose-500 px-4 py-3 text-sm font-semibold text-white hover:bg-rose-400 transition-colors mobile-cart-checkout"
+                  >
+                    <FiCreditCard className="w-4 h-4" />
+                    Pay with Card
+                  </Link>
+                  <Link
+                    href="/order-cash"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-rose-500 text-rose-500 px-4 py-3 text-sm font-semibold hover:bg-rose-50 transition-colors mobile-cart-checkout"
+                  >
+                    <FiCreditCard className="w-4 h-4" />
+                    Cash on Delivery
+                  </Link>
                   <Link
                     href="/products"
-                    className="text-rose-500 hover:underline"
+                    className="text-rose-500 hover:underline text-sm"
                   >
                     Continue Shopping
                   </Link>
-                </p>
+                </div>
               </div>
             </section>
           </div>
