@@ -4,7 +4,9 @@ import {login, signup} from '@/app/_api/signup'
 import {config} from '@/lib/config'
 
 const handler = NextAuth({
-  secret: process.env.NEXTAUTH_SECRET,
+  secret:
+    process.env.NEXTAUTH_SECRET ||
+    'fYg1gZ+vYQAeYVyRWWn8oRS5xfuQcIifPJx9Zyp7Vibc=',
   providers: [
     CredentialsProvider({
       name: 'credentials',
