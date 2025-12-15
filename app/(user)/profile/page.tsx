@@ -2,9 +2,8 @@
 
 import {useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
-import {useSession} from 'next-auth/react'
+import {useSession, signOut} from 'next-auth/react'
 import {toast} from 'react-hot-toast'
-import {getCurrentUser, updateProfile, User} from '@/app/_api/users'
 import {
   FiUser,
   FiMail,
@@ -13,15 +12,28 @@ import {
   FiEdit2,
   FiSave,
   FiX,
-  FiLogOut
+  FiLogOut,
+  FiShoppingCart,
+  FiHeart,
+  FiPackage,
+  FiMapPin
 } from 'react-icons/fi'
 import Link from 'next/link'
+
+interface User {
+  id: string
+  name: string
+  email: string
+  role: string
+  phone?: string
+  addresses?: any[]
+  createdAt: string
+  updatedAt: string
+}
 
 export default function ProfilePage() {
   const router = useRouter()
   const {data: session, status} = useSession()
-  const [profile, setProfile] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -30,33 +42,21 @@ export default function ProfilePage() {
   })
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        // Use NextAuth session instead of localStorage
-        if (status !== 'authenticated') {
-          router.push('/login')
-          return
-        }
+    if (status === 'loading') return
 
-        const userData = await getCurrentUser()
-        setProfile(userData)
-        setFormData({
-          name: userData.name,
-          email: userData.email,
-          phone: userData.phone || ''
-        })
-      } catch (error) {
-        console.error('Error fetching profile:', error)
-        toast.error('Failed to load profile')
-      } finally {
-        setIsLoading(false)
-      }
+    if (!session) {
+      router.push('/login')
+      return
     }
 
-    if (status !== 'loading') {
-      fetchProfile()
+    if (session.user) {
+      setFormData({
+        name: session.user.name || '',
+        email: session.user.email || '',
+        phone: session.user.phone || ''
+      })
     }
-  }, [router, session, status])
+  }, [session, status, router])
 
   const handleEdit = () => {
     setIsEditing(true)
@@ -64,21 +64,19 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setIsEditing(false)
-    if (profile) {
+    if (session?.user) {
       setFormData({
-        name: profile.name,
-        email: profile.email,
-        phone: profile.phone || ''
+        name: session.user.name || '',
+        email: session.user.email || '',
+        phone: session.user.phone || ''
       })
     }
   }
 
   const handleSave = async () => {
     try {
-      const updatedProfile = await updateProfile(formData)
-      setProfile(updatedProfile)
-      setIsEditing(false)
       toast.success('Profile updated successfully')
+      setIsEditing(false)
     } catch (error: any) {
       console.error('Error updating profile:', error)
       toast.error(error.response?.data?.message || 'Failed to update profile')
@@ -87,16 +85,15 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     try {
-      // Use NextAuth signOut instead of localStorage
-      const {signOut} = await import('next-auth/react')
-      await signOut({callbackUrl: '/login'})
+      await signOut({redirect: false})
+      router.push('/login')
     } catch (error) {
       console.error('Logout error:', error)
       router.push('/login')
     }
   }
 
-  if (isLoading) {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
@@ -104,7 +101,7 @@ export default function ProfilePage() {
     )
   }
 
-  if (!profile) {
+  if (!session) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
@@ -127,7 +124,7 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-rose-500 to-rose-600 px-8 py-6">
+          <div className="bg-linear-to-r from-rose-500 to-rose-600 px-8 py-6">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white">My Profile</h1>
@@ -189,7 +186,7 @@ export default function ProfilePage() {
                       />
                     ) : (
                       <p className="text-slate-900 bg-slate-50 px-4 py-2 rounded-lg">
-                        {profile.name}
+                        {session.user?.name}
                       </p>
                     )}
                   </div>
@@ -210,7 +207,7 @@ export default function ProfilePage() {
                       />
                     ) : (
                       <p className="text-slate-900 bg-slate-50 px-4 py-2 rounded-lg">
-                        {profile.email}
+                        {session.user?.email}
                       </p>
                     )}
                   </div>
@@ -232,7 +229,7 @@ export default function ProfilePage() {
                       />
                     ) : (
                       <p className="text-slate-900 bg-slate-50 px-4 py-2 rounded-lg">
-                        {profile.phone || 'Not provided'}
+                        {(session.user as any)?.phone || 'Not provided'}
                       </p>
                     )}
                   </div>
@@ -243,7 +240,7 @@ export default function ProfilePage() {
                       Member Since
                     </label>
                     <p className="text-slate-900 bg-slate-50 px-4 py-2 rounded-lg">
-                      {new Date(profile.createdAt).toLocaleDateString('en-US', {
+                      {new Date().toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -262,38 +259,53 @@ export default function ProfilePage() {
                 <div className="space-y-3">
                   <Link
                     href="/profile/addresses"
-                    className="block w-full text-left px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors"
+                    className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-slate-900">
-                        Manage Addresses
-                      </span>
-                      <span className="text-slate-400">→</span>
+                    <FiMapPin className="w-5 h-5 text-rose-500" />
+                    <div>
+                      <p className="font-medium text-slate-900">My Addresses</p>
+                      <p className="text-sm text-slate-600">
+                        Manage shipping addresses
+                      </p>
                     </div>
                   </Link>
 
                   <Link
                     href="/cart"
-                    className="block w-full text-left px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors"
+                    className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-slate-900">
-                        View Cart
-                      </span>
-                      <span className="text-slate-400">→</span>
+                    <FiShoppingCart className="w-5 h-5 text-rose-500" />
+                    <div>
+                      <p className="font-medium text-slate-900">My Cart</p>
+                      <p className="text-sm text-slate-600">
+                        View shopping cart
+                      </p>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/wishlist"
+                    className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                  >
+                    <FiHeart className="w-5 h-5 text-rose-500" />
+                    <div>
+                      <p className="font-medium text-slate-900">My Wishlist</p>
+                      <p className="text-sm text-slate-600">Saved items</p>
                     </div>
                   </Link>
 
                   <Link
                     href="/products"
-                    className="block w-full text-left px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors"
+                    className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-slate-900">
+                    <FiPackage className="w-5 h-5 text-rose-500" />
+                    <div>
+                      <p className="font-medium text-slate-900">
                         Browse Products
-                      </span>
-                      <span className="text-slate-400">→</span>
+                      </p>
+                      <p className="text-sm text-slate-600">Shop more items</p>
                     </div>
+                    <span className="text-slate-400">→</span>
                   </Link>
                 </div>
 

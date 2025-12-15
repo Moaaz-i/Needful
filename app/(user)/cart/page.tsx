@@ -287,13 +287,6 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                className="w-full mt-6 bg-rose-500 hover:bg-rose-600 text-white font-medium py-3 px-4 rounded-lg transition-colors mobile-cart-checkout"
-              >
-                Proceed to Checkout
-              </button>
-
               <div className="mt-4 text-center">
                 <p className="text-xs text-slate-500 mb-3">Payment Options</p>
                 <div className="space-y-2">

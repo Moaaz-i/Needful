@@ -5,7 +5,14 @@ import {useRouter, useParams} from 'next/navigation'
 import {getAddresses, updateAddress, Address} from '@/app/_api/addresses'
 import {toast} from 'react-hot-toast'
 import Link from 'next/link'
-import {FiArrowRight} from 'react-icons/fi'
+import {
+  FiArrowLeft,
+  FiHome,
+  FiMapPin,
+  FiPhone,
+  FiSave,
+  FiX
+} from 'react-icons/fi'
 
 export default function EditAddressPage() {
   const router = useRouter()
@@ -20,6 +27,8 @@ export default function EditAddressPage() {
     phone: '',
     city: ''
   })
+
+  // Check authentication
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -74,92 +83,123 @@ export default function EditAddressPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-8">
-      <div className="mb-8">
-        <Link
-          href="/profile/addresses"
-          className="inline-flex items-center text-rose-500 hover:text-rose-600 mb-4"
-        >
-          <FiArrowRight className="ml-1 transform rotate-180" /> Back to
-          Addresses
-        </Link>
-        <h1 className="text-2xl font-bold">Edit Address</h1>
+    <div className="min-h-screen bg-slate-50 py-8">
+      <div className="max-w-2xl mx-auto px-4">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+          <div className="bg-linear-to-r from-rose-500 to-rose-600 px-8 py-6">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/profile/addresses"
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <FiArrowLeft className="w-5 h-5" />
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Edit Address</h1>
+                <p className="text-rose-100">Update your shipping address</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                <FiHome className="inline w-4 h-4 mr-2 text-rose-500" />
+                Address Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                placeholder="e.g., Home, Office, Parents"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                <FiMapPin className="inline w-4 h-4 mr-2 text-rose-500" />
+                Address Details
+              </label>
+              <textarea
+                name="details"
+                value={formData.details}
+                onChange={handleChange}
+                rows={3}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"
+                placeholder="Street address, apartment number, etc."
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                <FiPhone className="inline w-4 h-4 mr-2 text-rose-500" />
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                placeholder="Your phone number"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                <FiMapPin className="inline w-4 h-4 mr-2 text-rose-500" />
+                City
+              </label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                placeholder="Your city"
+                required
+              />
+            </div>
+
+            <div className="flex gap-4 pt-6">
+              <button
+                type="button"
+                onClick={() => router.push('/profile/addresses')}
+                className="flex-1 flex items-center justify-center gap-2 bg-slate-100 text-slate-700 py-3 px-4 rounded-lg hover:bg-slate-200 transition-colors"
+              >
+                <FiX className="w-4 h-4" />
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 flex items-center justify-center gap-2 bg-rose-500 text-white py-3 px-4 rounded-lg hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <FiSave className="w-4 h-4" />
+                    Save Changes
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="text-right">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            اسم العنوان
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right"
-            required
-          />
-        </div>
-
-        <div className="text-right">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            تفاصيل العنوان
-          </label>
-          <textarea
-            name="details"
-            value={formData.details}
-            onChange={handleChange}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right"
-            required
-          />
-        </div>
-
-        <div className="text-right">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            رقم الهاتف
-          </label>
-          <input
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right"
-            required
-          />
-        </div>
-
-        <div className="text-right">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            المدينة
-          </label>
-          <input
-            type="text"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right"
-            required
-          />
-        </div>
-
-        <div className="flex gap-4 pt-6">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="flex-1 bg-rose-500 text-white py-2 px-4 rounded-md hover:bg-rose-600 disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {isLoading ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
-      </form>
     </div>
   )
 }

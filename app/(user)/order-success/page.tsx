@@ -111,7 +111,7 @@ export default function OrderSuccessPage() {
               Continue Shopping
             </Link>
             <Link
-              href="/profile"
+              href="/profile/orders"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-500 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-400 transition-colors"
             >
               <FiHome className="w-4 h-4" />

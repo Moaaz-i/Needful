@@ -1,9 +1,11 @@
 // API functions for wishlist operations
 import Api from './api'
 
+import {Product} from './products'
+
 export interface WishlistItem {
   _id: string
-  product: any
+  product: Product
   user: string
   createdAt: string
 }
@@ -13,8 +15,9 @@ export async function getWishlist(): Promise<{
   data: WishlistItem[]
   count: number
 }> {
+  const api = Api()
   try {
-    const response = await Api().get('/wishlist')
+    const response = await api.get('/wishlist')
     return response.data
   } catch (error) {
     console.error('Error fetching wishlist:', error)

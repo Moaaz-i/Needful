@@ -20,7 +20,7 @@ export function unsubscribeFromLoading(listener: (count: number) => void) {
 
 export default function Api(baseURL?: string) {
   const api = axios.create({
-    baseURL: baseURL || '/api/proxy',
+    baseURL: baseURL || 'https://ecommerce.routemisr.com/api/v1',
     headers: {
       'Content-Type': 'application/json'
     }
@@ -38,17 +38,6 @@ export default function Api(baseURL?: string) {
 
     if (globalToken) {
       config.headers.token = globalToken
-    }
-
-    // Add custom identifier and move endpoint to query params
-    if (config.url) {
-      const randomParam = Math.random().toString(36).substring(7)
-      config.params = {
-        ...config.params,
-        endpoint: config.url,
-        _custom: randomParam
-      }
-      config.url = '' // Clear URL since endpoint is now in params
     }
 
     return config

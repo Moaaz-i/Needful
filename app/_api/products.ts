@@ -44,7 +44,7 @@ export type Product = {
 }
 
 // Transform API response to match global Product interface
-const transformProduct = (
+export const transformProduct = (
   apiProduct: Omit<Product, 'id' | 'colors'>
 ): GlobalProduct => {
   return {

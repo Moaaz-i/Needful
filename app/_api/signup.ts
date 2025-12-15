@@ -39,26 +39,9 @@ export async function login(
   payload: LoginPayload,
   customBaseUrl?: string
 ): Promise<AuthResponse> {
-  const baseUrl =
-    customBaseUrl ||
-    (typeof window !== 'undefined' ? window.location.origin : '')
-  const loginUrl = baseUrl
-    ? `${baseUrl}/api/v1/auth/signin`
-    : apiEndpoints.auth.signin
-
-  const response = await fetch(loginUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  })
-
-  if (!response.ok) {
-    throw new Error('Login failed')
-  }
-
-  return response.json()
+  const api = Api(customBaseUrl)
+  const res = await api.post<AuthResponse>('/auth/signin', payload)
+  return res.data
 }
 
 export async function loginWithProxy(

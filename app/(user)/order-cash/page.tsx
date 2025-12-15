@@ -13,13 +13,12 @@ import {
   FiCreditCard,
   FiCheck
 } from 'react-icons/fi'
+import {Address, getAddresses} from '@/app/_api/addresses'
 
 interface OrderFormData {
   firstName: string
   lastName: string
-  phone: string
   address: string
-  city: string
   notes: string
 }
 
@@ -30,19 +29,30 @@ export default function OrderCashPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [addresses, setAddresses] = useState<{data: Address[]}>()
+
+  useEffect(() => {
+    getAddresses()
+      .then((res) =>
+        setAddresses({
+          data: res.data
+        })
+      )
+      .catch((err) => console.error(err))
+  }, [])
 
   const [formData, setFormData] = useState<OrderFormData>({
     firstName: '',
     lastName: '',
-    phone: '',
     address: '',
-    city: '',
     notes: ''
   })
 
   const [errors, setErrors] = useState<Partial<OrderFormData>>({})
   const [notificationSent, setNotificationSent] = useState(false)
   const [isSendingNotification, setIsSendingNotification] = useState(false)
+  const [orderCreated, setOrderCreated] = useState(false)
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null)
 
   useEffect(() => {
     loadCart()
@@ -77,16 +87,8 @@ export default function OrderCashPage() {
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required'
     }
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required'
-    } else if (!/^(01[0-2]|015)[0-9]{8}$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid Egyptian phone number'
-    }
     if (!formData.address.trim()) {
       newErrors.address = 'Address is required'
-    }
-    if (!formData.city.trim()) {
-      newErrors.city = 'City is required'
     }
 
     setErrors(newErrors)
@@ -109,20 +111,36 @@ export default function OrderCashPage() {
       setIsSendingNotification(true)
       setError(null)
 
+      // First create the order to get an order ID
       const orderData: OrderData = {
         shippingAddress: {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          phone: formData.phone,
+          phone:
+            addresses?.data.find(
+              (addr) => `${addr.details}, ${addr.city}` === formData.address
+            )?.phone || '',
           address: formData.address,
-          city: formData.city
+          city:
+            addresses?.data.find(
+              (addr) => `${addr.details}, ${addr.city}` === formData.address
+            )?.city || ''
         },
         notes: formData.notes,
         paymentMethod: 'cash'
       }
 
-      await sendOrderNotification(
+      const orderResponse = await createOrder(
         orderData,
+        typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
+      )
+
+      setOrderCreated(true)
+      setCreatedOrderId(orderResponse.data?._id || null)
+
+      // Send notification with order ID
+      await sendOrderNotification(
+        orderResponse.data?._id || '',
         typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
       )
 
@@ -149,13 +167,25 @@ export default function OrderCashPage() {
       setIsSubmitting(true)
       setError(null)
 
+      if (orderCreated && createdOrderId) {
+        // Order already created, just redirect to success
+        router.push('/order-success')
+        return
+      }
+
       const orderData: OrderData = {
         shippingAddress: {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          phone: formData.phone,
+          phone:
+            addresses?.data.find(
+              (addr) => `${addr.details}, ${addr.city}` === formData.address
+            )?.phone || '',
           address: formData.address,
-          city: formData.city
+          city:
+            addresses?.data.find(
+              (addr) => `${addr.details}, ${addr.city}` === formData.address
+            )?.city || ''
         },
         notes: formData.notes,
         paymentMethod: 'cash'
@@ -287,24 +317,6 @@ export default function OrderCashPage() {
                   )}
                 </div>
               </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent ${
-                    errors.phone ? 'border-rose-500' : 'border-slate-300'
-                  }`}
-                  placeholder="01xxxxxxxxx"
-                />
-                {errors.phone && (
-                  <p className="mt-1 text-xs text-rose-500">{errors.phone}</p>
-                )}
-              </div>
             </section>
 
             {/* Shipping Information */}
@@ -319,37 +331,37 @@ export default function OrderCashPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    City *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent ${
-                      errors.city ? 'border-rose-500' : 'border-slate-300'
-                    }`}
-                    placeholder="Enter your city"
-                  />
-                  {errors.city && (
-                    <p className="mt-1 text-xs text-rose-500">{errors.city}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
                     Address *
                   </label>
-                  <textarea
-                    value={formData.address}
-                    onChange={(e) =>
-                      handleInputChange('address', e.target.value)
-                    }
-                    rows={3}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none ${
-                      errors.address ? 'border-rose-500' : 'border-slate-300'
-                    }`}
-                    placeholder="Enter your full address"
-                  />
+                  <div className="flex gap-2">
+                    <select
+                      value={formData.address}
+                      onChange={(e) =>
+                        handleInputChange('address', e.target.value)
+                      }
+                      className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent ${
+                        errors.address ? 'border-rose-500' : 'border-slate-300'
+                      }`}
+                    >
+                      <option value="">Select your address</option>
+                      {addresses?.data.map((addressData) => (
+                        <option
+                          key={addressData._id}
+                          value={`${addressData.details}, ${addressData.city}`}
+                        >
+                          {addressData.name} - {addressData.details},{' '}
+                          {addressData.city}
+                        </option>
+                      ))}
+                    </select>
+                    <Link
+                      href="/profile/addresses"
+                      className="inline-flex items-center justify-center px-4 py-3 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors"
+                      title="Add new address"
+                    >
+                      <FiMapPin className="w-4 h-4" />
+                    </Link>
+                  </div>
                   {errors.address && (
                     <p className="mt-1 text-xs text-rose-500">
                       {errors.address}

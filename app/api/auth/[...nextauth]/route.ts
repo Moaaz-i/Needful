@@ -16,14 +16,19 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         try {
+          console.log('Authorize called with:', credentials?.email)
+
           if (credentials?.email && credentials?.password) {
             const result = await login({
               email: credentials.email,
               password: credentials.password
             })
 
+            console.log('Login result:', result)
+
             if (result.token && result.user) {
               const user = result.user
+              console.log('Returning user:', user)
               return {
                 id: user._id || user.email, // Use _id if available, fallback to email
                 name: user.name,
@@ -33,9 +38,14 @@ const handler = NextAuth({
               }
             }
           }
+          console.log('No valid result, returning null')
           return null
-        } catch (error) {
+        } catch (error: any) {
           console.error('Auth error:', error)
+          if (error.response) {
+            console.error('Error response data:', error.response.data)
+            console.error('Error response status:', error.response.status)
+          }
           return null
         }
       }
@@ -67,3 +77,4 @@ const handler = NextAuth({
 })
 
 export {handler as GET, handler as POST}
+export {handler}

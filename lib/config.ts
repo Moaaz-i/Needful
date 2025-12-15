@@ -18,8 +18,8 @@ function getBaseUrl(): string {
 // API endpoints
 export const apiEndpoints = {
   auth: {
-    signin: `${config.apiUrl}/api/v1/auth/signin`,
-    signup: `${config.apiUrl}/api/v1/auth/signup`
+    signin: `${config.apiUrl}/api/v1/auth/login`,
+    signup: `${config.apiUrl}/api/v1/auth/register`
   },
   base: `${config.apiUrl}/api/v1`,
   orders: {
