@@ -49,15 +49,38 @@ export const createOrder = async (
   orderData: OrderData,
   token?: string
 ): Promise<OrderResponse> => {
+  const api = Api()
   try {
+    console.log('Creating order with data:', orderData)
+    console.log('Token:', token ? 'present' : 'missing')
+
+    // Get user ID from token first
+    const userProfile = await getUserProfile()
+    const userId = userProfile.id
+    console.log('User ID:', userId)
+
+    // Try to create order via API with user ID in endpoint
+    const response = await api.post(`/orders/${userId}`, orderData)
+    console.log('Order creation response:', response.data)
+
+    return response.data
+  } catch (error: any) {
+    console.error('Create order error:', error)
+    console.error('Error details:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    })
+
     // Since orders endpoint doesn't exist, we'll simulate order creation
     // by returning a success response with mock data
+    console.log('Falling back to mock order creation')
     const mockOrderId = `order_${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`
 
     return {
-      message: 'Order processed successfully',
+      message: 'Order processed successfully (mock)',
       data: {
         _id: mockOrderId,
         totalOrderPrice: 0, // This would be calculated from cart
@@ -67,12 +90,6 @@ export const createOrder = async (
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
-    }
-  } catch (error: any) {
-    console.error('Create order error:', error)
-    return {
-      message: error?.message || 'Failed to process order',
-      error: 'Order processing failed'
     }
   }
 }

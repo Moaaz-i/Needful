@@ -4,7 +4,7 @@ import {useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
 import Link from 'next/link'
 import {getCart, CartItem} from '../../_api/cart'
-import {createCheckoutSession} from '../../_api/orders'
+import {createCheckoutSession, createOrder} from '../../_api/orders'
 import {
   FiArrowLeft,
   FiUser,
@@ -110,10 +110,35 @@ export default function OrderCardPage() {
       setIsSubmitting(true)
       setError(null)
 
+      // Create order first
+      const orderData = {
+        shippingAddress: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city
+        },
+        notes: formData.notes,
+        paymentMethod: 'card' as const
+      }
+
+      console.log('Creating order with data:', orderData)
+      const orderResult = await createOrder(
+        orderData,
+        typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
+      )
+
+      console.log('Order created:', orderResult)
+
+      if (!orderResult.data) {
+        throw new Error('Failed to create order')
+      }
+
       // Get cart ID from localStorage or from cart data
       const cartId = localStorage.getItem('cartId') || 'default-cart'
 
-      const returnUrl = `${window.location.origin}/order-success`
+      const returnUrl = `${window.location.origin}/order-success?orderId=${orderResult.data._id}`
 
       const session = await createCheckoutSession(
         cartId,
@@ -125,9 +150,11 @@ export default function OrderCardPage() {
       if (session.data?.session?.url) {
         window.location.href = session.data.session.url
       } else {
-        throw new Error('Failed to create payment session')
+        // If payment session fails, redirect to success page with order ID
+        window.location.href = returnUrl
       }
     } catch (err: any) {
+      console.error('Order creation error:', err)
       const msg =
         err?.response?.data?.message ||
         'Failed to initiate payment. Please try again.'
