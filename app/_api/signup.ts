@@ -18,7 +18,7 @@ export type AuthResponse = {
   message: string
   token: string
   user: {
-    _id: string
+    id: string
     name: string
     email: string
     role: string
@@ -29,7 +29,10 @@ export async function signup(
   payload: SignupPayload,
   customBaseUrl?: string
 ): Promise<AuthResponse> {
-  const api = Api(customBaseUrl)
+  // Use direct auth endpoint URL to avoid proxy issues
+  const baseUrl =
+    customBaseUrl || apiEndpoints.auth.signup.replace('/auth/signup', '')
+  const api = Api(baseUrl)
 
   const res = await api.post<AuthResponse>('/auth/signup', payload)
   return res.data
@@ -39,7 +42,10 @@ export async function login(
   payload: LoginPayload,
   customBaseUrl?: string
 ): Promise<AuthResponse> {
-  const api = Api(customBaseUrl)
+  // Use direct auth endpoint URL to avoid proxy issues
+  const baseUrl =
+    customBaseUrl || apiEndpoints.auth.signin.replace('/auth/signin', '')
+  const api = Api(baseUrl)
   const res = await api.post<AuthResponse>('/auth/signin', payload)
   return res.data
 }
@@ -48,6 +54,7 @@ export async function loginWithProxy(
   payload: LoginPayload,
   customBaseUrl?: string
 ): Promise<AuthResponse> {
+  // This function is deprecated but kept for compatibility
   const api = Api(customBaseUrl)
   const res = await api.post<AuthResponse>('/auth/signin', payload)
   return res.data

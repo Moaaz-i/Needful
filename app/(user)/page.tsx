@@ -8,6 +8,7 @@ import {getAllProducts} from '../_api/products'
 import {useState, useEffect} from 'react'
 import {Category} from '../_api/categories'
 import {ProductCard} from '../_components/product-card'
+import Image from 'next/image'
 import {Pagination, Autoplay} from 'swiper/modules'
 import Link from 'next/link'
 import {useAutoRefreshAll} from '../_hooks/use-api-query'
@@ -125,11 +126,13 @@ export default function Home() {
                     className="group w-64 md:w-72 relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition duration-300 block"
                   >
                     {category.image && (
-                      <div className="h-96 w-full overflow-hidden bg-slate-100">
-                        <img
+                      <div className="h-96 w-full overflow-hidden bg-slate-100 relative">
+                        <Image
                           src={category.image}
                           alt={category.name}
-                          className="h-full w-full object-cover transition duration-300 group-hover:scale-110 group-hover:opacity-90"
+                          fill
+                          className="object-cover transition duration-300 group-hover:scale-110 group-hover:opacity-90"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                       </div>
                     )}

@@ -2,6 +2,7 @@
 
 import {useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
+import {useSession} from 'next-auth/react'
 import Link from 'next/link'
 import {getCart, CartItem} from '../../_api/cart'
 import {createCheckoutSession, createOrder} from '../../_api/orders'
@@ -25,6 +26,7 @@ interface OrderFormData {
 }
 
 export default function OrderCardPage() {
+  const {data: session} = useSession()
   const router = useRouter()
   const [items, setItems] = useState<CartItem[]>([])
   const [totalPrice, setTotalPrice] = useState(0)
@@ -110,54 +112,66 @@ export default function OrderCardPage() {
       setIsSubmitting(true)
       setError(null)
 
-      // Create order first
+      // Create order data in the expected format
       const orderData = {
         shippingAddress: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
+          details: formData.address,
           phone: formData.phone,
-          address: formData.address,
           city: formData.city
         },
-        notes: formData.notes,
         paymentMethod: 'card' as const
       }
 
       console.log('Creating order with data:', orderData)
       const orderResult = await createOrder(
-        orderData,
-        typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
+        orderData.shippingAddress,
+        orderData.paymentMethod
       )
 
       console.log('Order created:', orderResult)
 
-      if (!orderResult.data) {
-        throw new Error('Failed to create order')
+      if (!orderResult.data?.order?._id) {
+        throw new Error('Failed to create order: Invalid response from server')
       }
 
-      // Get cart ID from localStorage or from cart data
-      const cartId = localStorage.getItem('cartId') || 'default-cart'
+      // Get cart ID from the cart API response
+      let cartId = ''
+      try {
+        const cartResponse = await getCart()
+        if (cartResponse.data?._id) {
+          cartId = cartResponse.data._id
+        } else {
+          throw new Error('No cart ID found')
+        }
+      } catch (error) {
+        console.error('Failed to get cart:', error)
+        throw new Error('Failed to process your cart. Please try again.')
+      }
 
-      const returnUrl = `${window.location.origin}/order-success?orderId=${orderResult.data._id}`
-
-      const session = await createCheckoutSession(
+      // Create checkout session
+      const returnUrl = `${window.location.origin}/order-success?orderId=${orderResult.data.order._id}`
+      console.log(
+        'Creating checkout session for cart:',
         cartId,
-        returnUrl,
-        typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
+        'returnUrl:',
+        returnUrl
       )
 
-      // Redirect to payment gateway
-      if (session.data?.session?.url) {
-        window.location.href = session.data.session.url
+      const checkoutSession = await createCheckoutSession(cartId, returnUrl)
+
+      // Redirect to payment gateway or success page
+      if (checkoutSession?.session?.url) {
+        window.location.href = checkoutSession.session.url
       } else {
-        // If payment session fails, redirect to success page with order ID
-        window.location.href = returnUrl
+        // If payment session fails, redirect to success page
+        router.push(`/order-success?orderId=${orderResult.data.order._id}`)
       }
     } catch (err: any) {
       console.error('Order creation error:', err)
       const msg =
         err?.response?.data?.message ||
-        'Failed to initiate payment. Please try again.'
+        err?.message ||
+        'Failed to process your order. Please try again.'
       setError(msg)
     } finally {
       setIsSubmitting(false)

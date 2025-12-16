@@ -29,9 +29,7 @@ export default function WishlistPage() {
         createdAt: product.createdAt || new Date().toISOString()
       }))
 
-      // Use comprehensive validation
-      const validItems = validateWishlistItems(wishlistItems)
-      setWishlistItems(validItems)
+      setWishlistItems(wishlistItems)
     } catch (error) {
       toast.error('Error loading wishlist')
       console.error('Error fetching wishlist:', error)

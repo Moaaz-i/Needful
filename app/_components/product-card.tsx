@@ -3,6 +3,7 @@
 
 import {useState} from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {Product} from '@/types'
 import {cn} from '@/lib/utils'
 import {Button} from './ui/button'
@@ -132,10 +133,12 @@ export function ProductCard({product, className, ...props}: ProductCardProps) {
           className="flex flex-1 flex-col"
         >
           <div className="aspect-square overflow-hidden bg-linear-to-br from-slate-100 to-slate-200 rounded-2xl mb-4 relative shrink-0">
-            <img
+            <Image
               src={product.imageCover}
               alt={product.title}
-              className="h-full w-full object-cover transition-all duration-500 group-hover:scale-110"
+              fill
+              className="object-cover transition-all duration-500 group-hover:scale-110"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
 
             {/* Discount Badge */}

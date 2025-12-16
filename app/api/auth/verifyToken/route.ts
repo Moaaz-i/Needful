@@ -1,23 +1,29 @@
 import {NextRequest, NextResponse} from 'next/server'
 import {getServerSession} from 'next-auth'
 import {handler} from '../[...nextauth]/route'
+import type {Session} from 'next-auth'
+
+// Extend the Session type to include our custom user properties
+interface CustomSession extends Session {
+  user?: {
+    id: string
+    name: string
+    email: string
+    phone?: string
+    role?: string
+  }
+  accessToken?: string
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(handler)
+    const session = (await getServerSession(handler)) as CustomSession | null
 
     if (!session || !session.user) {
       return NextResponse.json({error: 'Unauthorized'}, {status: 401})
     }
 
-    // Type the session user properly
-    const user = session.user as {
-      id: string
-      name: string
-      email: string
-      phone?: string
-      role?: string
-    }
+    const user = session.user
 
     // Return user data in the expected format
     return NextResponse.json({

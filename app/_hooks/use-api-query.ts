@@ -156,9 +156,9 @@ export function useProducts(filters = '') {
 export function useProduct(id: string) {
   return useApiQuery(
     ['product', id],
-    () => import('../_api/products').then((m) => m.getAllProducts()),
+    () => import('../_api/products').then((m) => m.getProductById(id)),
     {
-      select: (data) => data?.data,
+      select: (data) => data,
       staleTime: 5 * 60 * 1000,
       refetchInterval: 60 * 1000, // Refresh every minute for single product
       refetchOnWindowFocus: true

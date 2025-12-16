@@ -1,12 +1,11 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import {login, signup} from '@/app/_api/signup'
+import {login} from '@/app/_api/signup'
 import {config} from '@/lib/config'
+import Api from '@/app/_api/api'
 
 const handler = NextAuth({
-  secret:
-    process.env.NEXTAUTH_SECRET ||
-    'fYg1gZ+vYQAeYVyRWWn8oRS5xfuQcIifPJx9Zyp7Vibc=',
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -26,15 +25,37 @@ const handler = NextAuth({
 
             console.log('Login result:', result)
 
-            if (result.token && result.user) {
-              const user = result.user
-              console.log('Returning user:', user)
-              return {
-                id: user._id || user.email, // Use _id if available, fallback to email
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                accessToken: result.token
+            if (result.token) {
+              // Verify token and get user data from verifyToken endpoint using Api
+              try {
+                const api = Api(config.apiUrl)
+                const verifyResponse = await api.get('/auth/verifyToken')
+
+                console.log('Verify token result:', verifyResponse.data)
+
+                if (
+                  verifyResponse.data.message === 'verified' &&
+                  verifyResponse.data.decoded
+                ) {
+                  const decoded = verifyResponse.data.decoded
+                  return {
+                    id: decoded.id,
+                    name: decoded.name,
+                    email: credentials.email, // Use email from credentials since verifyToken doesn't return it
+                    role: decoded.role,
+                    accessToken: result.token
+                  }
+                }
+              } catch (verifyError) {
+                console.error('Verify token error:', verifyError)
+                // Fallback to basic user data if verifyToken fails
+                return {
+                  id: result.user?.id,
+                  name: result.user?.name || '',
+                  email: credentials.email,
+                  role: result.user?.role || 'user',
+                  accessToken: result.token
+                }
               }
             }
           }

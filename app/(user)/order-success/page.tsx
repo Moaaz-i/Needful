@@ -39,7 +39,7 @@ export default function OrderSuccessPage() {
 
           {/* Success Message */}
           <p className="text-slate-600 text-lg mb-8">
-            Thank you for your order. We've received your cash on delivery
+            Thank you for your order. We&apos;ve received your cash on delivery
             request and will process it shortly.
           </p>
 
@@ -83,7 +83,8 @@ export default function OrderSuccessPage() {
               <li className="flex items-start gap-2">
                 <span className="text-amber-600 mt-1">•</span>
                 <span>
-                  You'll receive a confirmation message with your order details
+                  You&apos;ll receive a confirmation message with your order
+                  details
                 </span>
               </li>
               <li className="flex items-start gap-2">

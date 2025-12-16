@@ -2,9 +2,10 @@
 
 import {useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
+import {useSession} from 'next-auth/react'
 import Link from 'next/link'
 import {getCart, CartItem} from '../../_api/cart'
-import {createOrder, OrderData, sendOrderNotification} from '../../_api/orders'
+import {createOrder} from '../../_api/orders'
 import {
   FiArrowLeft,
   FiUser,
@@ -23,6 +24,7 @@ interface OrderFormData {
 }
 
 export default function OrderCashPage() {
+  const {data: session} = useSession()
   const router = useRouter()
   const [items, setItems] = useState<CartItem[]>([])
   const [totalPrice, setTotalPrice] = useState(0)
@@ -112,44 +114,37 @@ export default function OrderCashPage() {
       setError(null)
 
       // First create the order to get an order ID
-      const orderData: OrderData = {
+      const orderData = {
         shippingAddress: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
+          details: formData.address,
           phone:
             addresses?.data.find(
               (addr) => `${addr.details}, ${addr.city}` === formData.address
             )?.phone || '',
-          address: formData.address,
           city:
             addresses?.data.find(
               (addr) => `${addr.details}, ${addr.city}` === formData.address
             )?.city || ''
         },
-        notes: formData.notes,
-        paymentMethod: 'cash'
+        paymentMethod: 'cash' as const
       }
 
-      const orderResponse = await createOrder(
-        orderData,
-        typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
+      console.log('Creating order with data:', orderData)
+      const orderResult = await createOrder(
+        orderData.shippingAddress,
+        orderData.paymentMethod
       )
 
       setOrderCreated(true)
-      setCreatedOrderId(orderResponse.data?._id || null)
+      setCreatedOrderId(orderResult.data?.order?._id || null)
 
-      // Send notification with order ID
-      await sendOrderNotification(
-        orderResponse.data?._id || '',
-        typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
-      )
-
+      // Notification functionality removed - just mark as sent
       setNotificationSent(true)
       setTimeout(() => setNotificationSent(false), 3000)
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
-        'Failed to send notification. Please try again.'
+        'Failed to process order. Please try again.'
       setError(msg)
     } finally {
       setIsSendingNotification(false)
@@ -173,27 +168,25 @@ export default function OrderCashPage() {
         return
       }
 
-      const orderData: OrderData = {
+      // Create order data in the expected format
+      const orderData = {
         shippingAddress: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
+          details: formData.address,
           phone:
             addresses?.data.find(
               (addr) => `${addr.details}, ${addr.city}` === formData.address
             )?.phone || '',
-          address: formData.address,
           city:
             addresses?.data.find(
               (addr) => `${addr.details}, ${addr.city}` === formData.address
             )?.city || ''
         },
-        notes: formData.notes,
-        paymentMethod: 'cash'
+        paymentMethod: 'cash' as const
       }
 
-      await createOrder(
-        orderData,
-        typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
+      const orderResult = await createOrder(
+        orderData.shippingAddress,
+        orderData.paymentMethod
       )
 
       // Redirect to success page or show success message

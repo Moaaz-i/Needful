@@ -186,7 +186,7 @@ export default function Login() {
 
         <div className="mt-8 pt-6 border-t border-slate-100 text-center mobile-text">
           <p className="text-sm md:text-base text-slate-500">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link
               href="/signup"
               className="font-medium text-rose-500 hover:text-rose-600 transition-colors mobile-transition"
