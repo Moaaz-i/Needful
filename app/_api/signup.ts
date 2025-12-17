@@ -29,7 +29,6 @@ export async function signup(
   payload: SignupPayload,
   customBaseUrl?: string
 ): Promise<AuthResponse> {
-  // Use direct auth endpoint URL to avoid proxy issues
   const baseUrl =
     customBaseUrl || apiEndpoints.auth.signup.replace('/auth/signup', '')
   const api = Api(baseUrl)
@@ -42,7 +41,6 @@ export async function login(
   payload: LoginPayload,
   customBaseUrl?: string
 ): Promise<AuthResponse> {
-  // Use direct auth endpoint URL to avoid proxy issues
   const baseUrl =
     customBaseUrl || apiEndpoints.auth.signin.replace('/auth/signin', '')
   const api = Api(baseUrl)

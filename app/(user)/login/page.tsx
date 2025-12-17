@@ -34,16 +34,14 @@ export default function Login() {
   })
 
   useEffect(() => {
-    // Use NextAuth session instead of localStorage
     if (status === 'authenticated') {
       router.replace('/')
     }
   }, [router, session, status])
 
-  // Show loading while checking authentication
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-rose-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-linear-to-br from-amber-50 via-white to-rose-50 flex items-center justify-center p-4">
         <div className="text-center mobile-card mobile-shadow-lg bg-white rounded-2xl p-8 max-w-sm w-full">
           <div className="animate-spin rounded-full h-12 w-12 md:h-16 md:w-16 border-b-2 border-rose-500 mx-auto mb-6"></div>
           <p className="text-slate-600 text-sm md:text-base mobile-text">
@@ -63,18 +61,16 @@ export default function Login() {
         email: data.email,
         password: data.password,
         callbackUrl: '/',
-        redirect: false // Don't redirect automatically
+        redirect: false
       })
 
       if (result?.error) {
-        // Show the actual error message from server
         const errorMessage =
           result.error === 'CredentialsSignin'
             ? 'Invalid email or password'
             : result.error
         setError(errorMessage)
       } else if (result?.ok) {
-        // Success - redirect manually
         window.location.href = '/'
       }
     } catch (err: any) {

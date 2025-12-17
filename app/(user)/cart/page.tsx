@@ -37,7 +37,6 @@ export default function CartPage() {
 
   useEffect(() => {
     loadCart()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleChangeCount = async (item: CartItem, delta: number) => {
@@ -295,7 +294,15 @@ export default function CartPage() {
                     className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-rose-500 px-4 py-3 text-sm font-semibold text-white hover:bg-rose-400 transition-colors mobile-cart-checkout"
                   >
                     <FiCreditCard className="w-4 h-4" />
-                    Pay
+                    Pay Online
+                  </Link>
+
+                  <Link
+                    href="/order-cash"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-rose-500 px-4 py-3 text-sm font-semibold text-rose-500 hover:border-rose-400 transition-colors mobile-cart-checkout"
+                  >
+                    <FiCreditCard className="w-4 h-4" />
+                    Pay Cash
                   </Link>
 
                   <Link

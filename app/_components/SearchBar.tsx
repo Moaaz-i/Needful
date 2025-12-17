@@ -47,7 +47,6 @@ export default function SearchBar() {
         )
         setResults(filtered.slice(0, 5))
       } catch (error) {
-        console.error('Search error:', error)
       } finally {
         setIsLoading(false)
       }

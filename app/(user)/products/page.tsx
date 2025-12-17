@@ -40,19 +40,15 @@ export default function Products() {
   const router = useRouter()
   const pathname = usePathname()
 
-  // Call hooks at component level
   const productsQuery = useProducts()
   const subcategoriesQuery = useSubcategories()
 
-  // Enable auto-refresh for all data
   useAutoRefreshAll()
 
-  // Use data directly from hooks
   const products = productsQuery.data || []
   const subcategories = subcategoriesQuery.data || []
   const isLoading = productsQuery.isLoading || subcategoriesQuery.isLoading
 
-  // Initialize filters from URL or use defaults
   const [filters, setFilters] = useState<FilterOptions>({
     category: searchParams.get('category')?.split(',') || [],
     subcategory: searchParams.get('subcategory')?.split(',') || [],
@@ -64,7 +60,6 @@ export default function Products() {
     search: searchParams.get('search') || ''
   })
 
-  // Update URL when filters change
   const updateURL = useCallback(
     (newFilters: FilterOptions) => {
       const params = new URLSearchParams()
@@ -99,14 +94,12 @@ export default function Products() {
     [pathname, router]
   )
 
-  // Handle filter changes
   const handleFilterChange = (name: keyof FilterOptions, value: any) => {
     const newFilters = {...filters, [name]: value}
     setFilters(newFilters)
     updateURL(newFilters)
   }
 
-  // Toggle category filter
   const toggleCategory = (categoryId: string) => {
     const newCategories = filters.category.includes(categoryId)
       ? filters.category.filter((id) => id !== categoryId)
@@ -114,7 +107,6 @@ export default function Products() {
     handleFilterChange('category', newCategories)
   }
 
-  // Toggle subcategory filter
   const toggleSubcategory = (subcategoryId: string) => {
     const newSubcategories = filters.subcategory.includes(subcategoryId)
       ? filters.subcategory.filter((id) => id !== subcategoryId)
@@ -122,7 +114,6 @@ export default function Products() {
     handleFilterChange('subcategory', newSubcategories)
   }
 
-  // Toggle brand filter
   const toggleBrand = (brandId: string) => {
     const newBrands = filters.brand.includes(brandId)
       ? filters.brand.filter((id) => id !== brandId)
@@ -130,7 +121,6 @@ export default function Products() {
     handleFilterChange('brand', newBrands)
   }
 
-  // Extract unique categories and brands
   useEffect(() => {
     const uniqueCategories = new Map()
     const uniqueBrands = new Map()
@@ -155,7 +145,6 @@ export default function Products() {
     setBrands(Array.from(uniqueBrands.values()))
   }, [products])
 
-  // Update filtered subcategories when category filter changes
   useEffect(() => {
     if (filters.category.length > 0) {
       const filtered = subcategories.filter((subcat: Subcategory) =>
@@ -163,7 +152,6 @@ export default function Products() {
       )
       setFilteredSubcategories(filtered)
 
-      // If the current subcategory selection includes subcategories not in the filtered list, remove them
       const validSubcategories = filters.subcategory.filter((subId) =>
         filtered.some((sub: Subcategory) => sub._id === subId)
       )
@@ -176,11 +164,9 @@ export default function Products() {
     }
   }, [filters.category, subcategories, filters.subcategory])
 
-  // Apply filters and sorting - computed value
   const filteredProducts = useMemo(() => {
     let result = [...products]
 
-    // Apply search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
       result = result.filter(
@@ -191,7 +177,6 @@ export default function Products() {
       )
     }
 
-    // Apply category filter
     if (filters.category.length > 0) {
       result = result.filter(
         (product) =>
@@ -199,7 +184,6 @@ export default function Products() {
       )
     }
 
-    // Apply subcategory filter
     if (filters.subcategory.length > 0) {
       result = result.filter(
         (product) =>
@@ -210,14 +194,12 @@ export default function Products() {
       )
     }
 
-    // Apply brand filter
     if (filters.brand.length > 0) {
       result = result.filter(
         (product) => product.brand && filters.brand.includes(product.brand._id)
       )
     }
 
-    // Apply price range filter
     if (filters.minPrice) {
       const min = parseFloat(filters.minPrice)
       result = result.filter((product) => product.price >= min)
@@ -227,12 +209,10 @@ export default function Products() {
       result = result.filter((product) => product.price <= max)
     }
 
-    // Apply in-stock filter
     if (filters.inStock) {
       result = result.filter((product) => product.quantity > 0)
     }
 
-    // Apply sorting
     result.sort((a, b) => {
       switch (filters.sortBy) {
         case 'price-asc':
@@ -252,17 +232,15 @@ export default function Products() {
     return result
   }, [products, filters])
 
-  // Calculate price range for the price filter
   const priceRange = useMemo(() => {
     if (products.length === 0) return {min: 0, max: 1000}
     const prices = products.map((p: Product) => p.price)
     return {
-      min: Math.floor(Math.min(...prices) / 100) * 100, // Round down to nearest 100
-      max: Math.ceil(Math.max(...prices) / 100) * 100 // Round up to nearest 100
+      min: Math.floor(Math.min(...prices) / 100) * 100,
+      max: Math.ceil(Math.max(...prices) / 100) * 100
     }
   }, [products])
 
-  // Clear all filters
   const clearFilters = () => {
     const defaultFilters: FilterOptions = {
       category: [],

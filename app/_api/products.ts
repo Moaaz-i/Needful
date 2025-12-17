@@ -43,14 +43,13 @@ export type Product = {
   updatedAt: string
 }
 
-// Transform API response to match global Product interface
 export const transformProduct = (
   apiProduct: Omit<Product, 'id' | 'colors'>
 ): GlobalProduct => {
   return {
     ...apiProduct,
-    id: apiProduct._id, // Use _id as id
-    colors: apiProduct.availableColors?.map((ac) => ac.color) || [], // Extract color strings from availableColors
+    id: apiProduct._id,
+    colors: apiProduct.availableColors?.map((ac) => ac.color) || [],
     ratingsAverage: apiProduct.ratingsAverage || 0,
     ratingsQuantity: apiProduct.ratingsQuantity || 0
   }

@@ -87,8 +87,6 @@ export function ProductCard({product, className, ...props}: ProductCardProps) {
       } else {
         await addToWishlistMutation.mutateAsync(product._id)
       }
-    } catch (error) {
-      console.error('Wishlist action failed:', error)
     } finally {
       setUpdatingId(null)
     }

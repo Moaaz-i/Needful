@@ -30,7 +30,6 @@ export default function Navigation() {
       const {signOut} = await import('next-auth/react')
       await signOut({callbackUrl: '/login'})
     } catch (error) {
-      console.error('Logout error:', error)
       router.push('/login')
     }
   }
@@ -84,7 +83,7 @@ export default function Navigation() {
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
-                  {item.badge && item.badge >= 0 && (
+                  {item.badge !== undefined && (
                     <span className="ml-1 bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {item.badge}
                     </span>
@@ -137,7 +136,7 @@ export default function Navigation() {
                   >
                     <Icon className="w-5 h-5" />
                     <span>{item.label}</span>
-                    {item.badge && (
+                    {item.badge !== undefined && (
                       <span className="ml-auto bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                         {item.badge}
                       </span>

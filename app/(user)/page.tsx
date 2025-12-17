@@ -14,7 +14,6 @@ import Link from 'next/link'
 import {useAutoRefreshAll} from '../_hooks/use-api-query'
 
 export default function Home() {
-  // Enable auto-refresh for all data
   useAutoRefreshAll()
 
   const [categories, setCategories] = useState<Category[]>([])
@@ -33,7 +32,6 @@ export default function Home() {
         setCategories(categoriesRes.data || [])
         setProducts(productsRes.data || [])
       } catch (err: any) {
-        console.log(err)
         setError(err.message || 'Failed to load data')
       } finally {
         setIsLoading(false)
@@ -105,8 +103,7 @@ export default function Home() {
           modules={[Pagination, Autoplay]}
         >
           {isLoading
-            ? // Loading skeleton for categories
-              [...Array(5)].map((_, i) => (
+            ? [...Array(5)].map((_, i) => (
                 <SwiperSlide key={`skeleton-${i}`} className="w-auto!">
                   <div className="w-64 md:w-72 relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm animate-pulse">
                     <div className="h-96 w-full bg-linear-to-br from-slate-200 to-slate-300"></div>

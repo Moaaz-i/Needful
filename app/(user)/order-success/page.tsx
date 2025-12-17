@@ -9,11 +9,8 @@ export default function OrderSuccessPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Clear cart after successful order
     const clearCart = async () => {
       try {
-        // You might want to clear the cart here or redirect to cart clearing
-        // This depends on your cart management strategy
       } catch (error) {
         console.error('Error clearing cart:', error)
       }

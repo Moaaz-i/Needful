@@ -1,41 +1,52 @@
 import Api from './api'
+import {getUserProfile as getAuthCurrentUser} from './auth'
+import {
+  User,
+  UpdateProfileData,
+  ChangePasswordData,
+  ResetPasswordData
+} from '@/app/interfaces'
+import {toast} from 'react-hot-toast'
 
-export interface User {
-  _id: string
-  name: string
-  email: string
-  phone?: string
-  role: 'user' | 'admin'
-  createdAt: string
-  updatedAt: string
+const api = Api()
+
+export const getAllUsers = () => {
+  return api
+    .get('/users')
+    .then((res) => res.data)
+    .catch((err) => {})
 }
 
-export interface UpdateProfileData {
-  name?: string
-  email?: string
-  phone?: string
+export const resetPassword = async (data: ResetPasswordData) => {
+  try {
+    const response = await api.put('/users/changeMyPassword', data)
+    toast.success('Password reset successfully')
+    return response.data
+  } catch (error: any) {
+    toast.error(error.response?.data?.message || 'Failed to reset password')
+    throw error
+  }
 }
 
-export interface ChangePasswordData {
-  currentPassword: string
-  newPassword: string
+export const updateUserProfile = async (data: UpdateProfileData) => {
+  try {
+    const response = await api.put('/users/updateMe', data)
+    toast.success('Profile updated successfully')
+    return response.data
+  } catch (error: any) {
+    toast.error(error.response?.data?.message || 'Failed to update profile')
+    throw error
+  }
 }
 
-// Get current user profile
-export const getCurrentUser = async () => {
-  const api = Api()
-  const {data} = await api.get<User>('/auth/verifyToken')
-  return data
-}
+export const getCurrentUser = getAuthCurrentUser
 
-// Update user profile
 export const updateProfile = async (userData: UpdateProfileData) => {
   const api = Api()
   const {data} = await api.put<User>('/users/profile', userData)
   return data
 }
 
-// Change password
 export const changePassword = async (passwordData: ChangePasswordData) => {
   const api = Api()
   const {data} = await api.put<{message: string}>(
@@ -45,7 +56,6 @@ export const changePassword = async (passwordData: ChangePasswordData) => {
   return data
 }
 
-// Delete user account
 export const deleteAccount = async () => {
   const api = Api()
   const {data} = await api.delete<{message: string}>('/users/account')

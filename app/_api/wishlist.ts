@@ -20,7 +20,6 @@ export async function getWishlist(): Promise<{
     const response = await api.get('/wishlist')
     return response.data
   } catch (error) {
-    console.error('Error fetching wishlist:', error)
     throw error
   }
 }
@@ -31,7 +30,6 @@ export async function addToWishlist(productId: string): Promise<WishlistItem> {
     const response = await Api().post('/wishlist', {productId})
     return response.data.data
   } catch (error) {
-    console.error('Error adding to wishlist:', error)
     throw error
   }
 }
@@ -41,7 +39,6 @@ export async function removeFromWishlist(itemId: string): Promise<void> {
   try {
     await Api().delete(`/wishlist/${itemId}`)
   } catch (error) {
-    console.error('Error removing from wishlist:', error)
     throw error
   }
 }

@@ -26,7 +26,6 @@ export default function AddressesPage() {
       setAddresses(data)
     } catch (error) {
       toast.error('Error fetching addresses')
-      console.error('Error fetching addresses:', error)
     } finally {
       setIsLoading(false)
     }
@@ -40,7 +39,6 @@ export default function AddressesPage() {
         fetchAddresses()
       } catch (error) {
         toast.error('Error deleting address')
-        console.error('Error deleting address:', error)
       }
     }
   }

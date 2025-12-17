@@ -26,8 +26,6 @@ export default function AddAddressPage() {
     city: ''
   })
 
-  // Check authentication
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -36,8 +34,6 @@ export default function AddAddressPage() {
       toast.success('Address added successfully')
       router.push('/profile/addresses')
     } catch (error) {
-      toast.error('Error adding address')
-      console.error('Error adding address:', error)
     } finally {
       setIsLoading(false)
     }

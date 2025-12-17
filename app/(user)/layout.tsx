@@ -15,22 +15,19 @@ export default function UserLayout({children}: {children: ReactNode}) {
   const {data: session, status} = useSession()
   const {loadCart} = useCart()
 
-  // Initialize cart when authenticated - FIXED to prevent infinite loop
   useEffect(() => {
     if (status === 'authenticated') {
       loadCart()
     }
-  }, [status]) // Remove loadCart from dependencies
+  }, [status])
 
-  useApiToken() // Initialize token management
+  useApiToken()
 
   useEffect(() => {
     const isAuthPage = pathname === '/login' || pathname === '/signup'
 
-    // Wait for session to load
     if (status === 'loading') return
 
-    // Check if authenticated
     const isAuthenticated = status === 'authenticated'
 
     if (!isAuthenticated && !isAuthPage) {
@@ -41,26 +38,10 @@ export default function UserLayout({children}: {children: ReactNode}) {
     if (isAuthenticated && isAuthPage) {
       router.replace('/')
     }
-
-    // Token is now handled by NextAuth session, no need for localStorage
   }, [pathname, router, session, status])
-
-  // Loading handler DISABLED to prevent infinite loops
-  // useEffect(() => {
-  //   const handleLoading = (count: number) => {
-  //     setIsLoading(count > 0)
-  //   }
-
-  //   subscribeToLoading(handleLoading)
-
-  //   return () => {
-  //     unsubscribeFromLoading(handleLoading)
-  //   }
-  // }, [])
 
   const isAuthPage = pathname === '/login' || pathname === '/signup'
 
-  // Show loading while checking authentication
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-linear-to-br from-amber-50 via-white to-rose-50 flex items-center justify-center p-4">

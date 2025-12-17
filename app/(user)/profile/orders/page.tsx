@@ -16,30 +16,43 @@ import {
   FiTruck
 } from 'react-icons/fi'
 
+interface Product {
+  _id: string
+  title: string
+  imageCover: string
+  price?: number
+}
+
+interface CartItem {
+  _id: string
+  count: number
+  price: number
+  product: Product
+}
+
 interface Order {
   _id: string
+  id?: number
   totalOrderPrice: number
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+  isPaid: boolean
+  isDelivered: boolean
   shippingAddress: {
-    firstName: string
-    lastName: string
     phone: string
-    address: string
     city: string
+    details?: string
   }
-  paymentMethod: 'cash' | 'card'
+  paymentMethodType: 'cash' | 'card'
   createdAt: string
   updatedAt: string
-  items?: Array<{
-    product: {
-      _id: string
-      title: string
-      imageCover: string
-      price: number
-    }
-    quantity: number
-    price: number
-  }>
+  cartItems: CartItem[]
+  user?: {
+    name: string
+    email: string
+    phone: string
+  }
+  taxPrice?: number
+  shippingPrice?: number
+  status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
 }
 
 export default function OrdersPage() {
@@ -49,16 +62,20 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     try {
       const response = await getUserOrders()
-      console.log('User orders response:', response)
+      console.log('Full API Response:', response) // Debug log
+      console.log('Response data:', response?.data) // Debug log
+      console.log('Is data array?', Array.isArray(response?.data)) // Debug log
 
-      if (response.data && Array.isArray(response.data)) {
-        setOrders(response.data)
+      if (response && response.data && Array.isArray(response.data)) {
+        console.log('Setting orders:', response.data.length, 'orders')
+        setOrders(response.data as unknown as Order[])
       } else {
+        console.log('No valid orders data found, setting empty array')
         setOrders([])
       }
     } catch (error) {
-      toast.error('Error loading orders')
       console.error('Error fetching orders:', error)
+      toast.error('Error loading orders')
       setOrders([])
     } finally {
       setIsLoading(false)
@@ -69,7 +86,16 @@ export default function OrdersPage() {
     fetchOrders()
   }, [])
 
-  const getStatusColor = (status: string) => {
+  const getStatusFromOrder = (
+    order: Order
+  ): 'delivered' | 'processing' | 'pending' | 'shipped' | 'cancelled' => {
+    if (order.isDelivered) return 'delivered'
+    if (order.isPaid) return 'processing'
+    return order.status || 'pending'
+  }
+
+  const getStatusColor = (order: Order) => {
+    const status = getStatusFromOrder(order)
     switch (status) {
       case 'delivered':
         return 'text-green-600 bg-green-50'
@@ -86,7 +112,8 @@ export default function OrdersPage() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (order: Order) => {
+    const status = getStatusFromOrder(order)
     switch (status) {
       case 'delivered':
         return <FiCheckCircle className="w-4 h-4" />
@@ -101,6 +128,11 @@ export default function OrdersPage() {
       default:
         return <FiClock className="w-4 h-4" />
     }
+  }
+
+  const getStatusText = (order: Order) => {
+    const status = getStatusFromOrder(order)
+    return status.charAt(0).toUpperCase() + status.slice(1)
   }
 
   const formatDate = (dateString: string) => {
@@ -173,7 +205,7 @@ export default function OrdersPage() {
                       <div>
                         <p className="text-sm text-slate-500">Order ID</p>
                         <p className="font-semibold text-slate-900">
-                          #{order._id}
+                          #{order.id || order._id.slice(-6)}
                         </p>
                       </div>
                       <div>
@@ -186,12 +218,11 @@ export default function OrdersPage() {
                     <div className="flex items-center gap-3">
                       <span
                         className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                          order.status
+                          order
                         )}`}
                       >
-                        {getStatusIcon(order.status)}
-                        {order.status.charAt(0).toUpperCase() +
-                          order.status.slice(1)}
+                        {getStatusIcon(order)}
+                        {getStatusText(order)}
                       </span>
                     </div>
                   </div>
@@ -200,8 +231,11 @@ export default function OrdersPage() {
                 {/* Order Items */}
                 <div className="px-6 py-4">
                   <div className="space-y-4">
-                    {order.items?.map((item, index) => (
-                      <div key={index} className="flex items-center gap-4">
+                    {order.cartItems?.map((item, index) => (
+                      <div
+                        key={item._id || index}
+                        className="flex items-center gap-4"
+                      >
                         <img
                           src={item.product.imageCover}
                           alt={item.product.title}
@@ -212,12 +246,12 @@ export default function OrdersPage() {
                             {item.product.title}
                           </h4>
                           <p className="text-sm text-slate-500">
-                            Qty: {item.quantity} × {item.price} EGP
+                            Qty: {item.count} × {item.price} EGP
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="font-semibold text-slate-900">
-                            {item.price * item.quantity} EGP
+                            {item.price * item.count} EGP
                           </p>
                         </div>
                       </div>
@@ -231,11 +265,11 @@ export default function OrdersPage() {
                     <div className="flex items-center gap-6">
                       <div className="flex items-center gap-2 text-sm text-slate-600">
                         <FiMapPin className="w-4 h-4" />
-                        {order.shippingAddress.city}
+                        {order.shippingAddress.city || 'City not specified'}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-slate-600">
                         <FiCreditCard className="w-4 h-4" />
-                        {order.paymentMethod === 'card'
+                        {order.paymentMethodType === 'card'
                           ? 'Card'
                           : 'Cash on Delivery'}
                       </div>

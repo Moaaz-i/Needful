@@ -19,21 +19,18 @@ export default function WishlistPage() {
   const fetchWishlist = async () => {
     try {
       const response = await getWishlist()
-      // API returns {status, count, data: [products]}
-      // We need to transform products to WishlistItem format
       const products = response.data || []
       const wishlistItems: WishlistItem[] = products.map((product: any) => ({
         _id: product._id,
         product: product,
-        user: 'current-user', // This should come from auth context
+        user: 'current-user',
         createdAt: product.createdAt || new Date().toISOString()
       }))
 
       setWishlistItems(wishlistItems)
     } catch (error) {
       toast.error('Error loading wishlist')
-      console.error('Error fetching wishlist:', error)
-      setWishlistItems([]) // Set empty array on error
+      setWishlistItems([])
     } finally {
       setIsLoading(false)
     }
@@ -49,7 +46,6 @@ export default function WishlistPage() {
       toast.success('Removed from wishlist')
     } catch (error) {
       toast.error('Error removing item')
-      console.error('Error removing from wishlist:', error)
     } finally {
       setRemovingItems((prev) => {
         const newSet = new Set(prev)
@@ -74,7 +70,6 @@ export default function WishlistPage() {
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
           <div className="bg-linear-to-r from-rose-500 to-rose-600 px-8 py-6">
             <div className="flex items-center gap-4">
@@ -118,7 +113,6 @@ export default function WishlistPage() {
                   className="transform transition-all duration-300 hover:scale-105 pb-5"
                 />
 
-                {/* Custom Remove Button for Wishlist */}
                 <button
                   onClick={() =>
                     handleRemoveFromWishlist(wishlistItem.product._id)

@@ -1,4 +1,3 @@
-// app/_api/addresses.ts
 import Api from './api'
 
 export interface Address {

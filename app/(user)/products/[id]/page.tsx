@@ -29,9 +29,7 @@ export default function ProductDetails() {
   const [addError, setAddError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Helper function to format large numbers
   const formatLargeNumber = (num: number) => {
-    // Convert to string and handle scientific notation
     const numStr = num.toExponential()
 
     if (numStr.includes('e')) {
@@ -39,7 +37,6 @@ export default function ProductDetails() {
       const mantissa = parseFloat(parts[0])
       const exponent = parseInt(parts[1])
 
-      // Calculate the actual number in billions
       const billions = mantissa * Math.pow(10, exponent - 9)
 
       if (exponent >= 9) {
@@ -51,7 +48,6 @@ export default function ProductDetails() {
       }
     }
 
-    // Handle normal numbers
     if (num >= 1000000000) {
       return Math.round(num / 1000000000) + 'B'
     }
@@ -64,7 +60,6 @@ export default function ProductDetails() {
     return num.toString()
   }
 
-  // Wishlist and Cart hooks
   const {wishlistItems} = useRealtimeWishlist()
   const {cartItems} = useRealtimeCart()
   const addToWishlistMutation = useAddToWishlist()
@@ -73,7 +68,6 @@ export default function ProductDetails() {
   const removeFromCartMutation = useRemoveFromCart()
   const [updatingId, setUpdatingId] = useState<string | null>(null)
 
-  // Check if product is in wishlist
   const isInWishlist =
     wishlistItems && Array.isArray(wishlistItems)
       ? wishlistItems.some((item: any) => {
@@ -86,7 +80,6 @@ export default function ProductDetails() {
         })
       : false
 
-  // Check if product is in cart
   const cartItem = cartItems?.find((item) => item.product._id === id)
   const isInCart = !!cartItem
 
@@ -111,7 +104,6 @@ export default function ProductDetails() {
         await addToWishlistMutation.mutateAsync(id)
       }
     } catch (error) {
-      console.error('Wishlist action failed:', error)
     } finally {
       setUpdatingId(null)
     }
@@ -138,7 +130,6 @@ export default function ProductDetails() {
     try {
       await removeFromCartMutation.mutateAsync(id)
     } catch (error) {
-      console.error('Failed to remove from cart:', error)
     } finally {
       setUpdatingId(null)
     }
@@ -152,14 +143,11 @@ export default function ProductDetails() {
     setUpdatingId(id)
 
     try {
-      // For now, we'll remove and re-add to update quantity
-      // You might want to implement a proper updateQuantity API call
       await removeFromCartMutation.mutateAsync(id)
       for (let i = 0; i < newCount; i++) {
         await addToCartMutation.mutateAsync(id)
       }
     } catch (error) {
-      console.error('Failed to update quantity:', error)
     } finally {
       setUpdatingId(null)
     }
@@ -396,7 +384,6 @@ export default function ProductDetails() {
 
                 <div className="mt-4 flex flex-wrap gap-3">
                   {isInCart && cartItem ? (
-                    // Cart Management Interface
                     <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-2">
                       <button
                         type="button"
@@ -428,7 +415,6 @@ export default function ProductDetails() {
                       </button>
                     </div>
                   ) : (
-                    // Add to Cart Button
                     <button
                       type="button"
                       disabled={adding}

@@ -78,7 +78,6 @@ export default function ProfilePage() {
       toast.success('Profile updated successfully')
       setIsEditing(false)
     } catch (error: any) {
-      console.error('Error updating profile:', error)
       toast.error(error.response?.data?.message || 'Failed to update profile')
     }
   }
@@ -88,7 +87,6 @@ export default function ProfilePage() {
       await signOut({redirect: false})
       router.push('/login')
     } catch (error) {
-      console.error('Logout error:', error)
       router.push('/login')
     }
   }
@@ -304,6 +302,18 @@ export default function ProfilePage() {
                         Browse Products
                       </p>
                       <p className="text-sm text-slate-600">Shop more items</p>
+                    </div>
+                    <span className="text-slate-400">→</span>
+                  </Link>
+
+                  <Link
+                    href="/profile/orders"
+                    className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                  >
+                    <FiPackage className="w-5 h-5 text-rose-500" />
+                    <div>
+                      <p className="font-medium text-slate-900">View Orders</p>
+                      <p className="text-sm text-slate-600">View your orders</p>
                     </div>
                     <span className="text-slate-400">→</span>
                   </Link>

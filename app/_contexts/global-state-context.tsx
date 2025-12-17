@@ -105,7 +105,6 @@ const initialState: GlobalState = {
   }
 }
 
-// Reducer
 function globalReducer(state: GlobalState, action: GlobalAction): GlobalState {
   switch (action.type) {
     case 'SET_CART_LOADING':
@@ -356,7 +355,6 @@ export function GlobalStateProvider({children}: {children: ReactNode}) {
         }
       })
     } catch (error) {
-      console.error('Failed to add to cart:', error)
       await refreshCart() // Revert optimistic update
       dispatch({
         type: 'ADD_NOTIFICATION',
@@ -386,7 +384,6 @@ export function GlobalStateProvider({children}: {children: ReactNode}) {
         }
       })
     } catch (error) {
-      console.error('Failed to remove from cart:', error)
       dispatch({
         type: 'ADD_NOTIFICATION',
         payload: {
@@ -406,7 +403,6 @@ export function GlobalStateProvider({children}: {children: ReactNode}) {
       await updateCartItemCount(itemId, count)
       await refreshCart()
     } catch (error) {
-      console.error('Failed to update cart item:', error)
       await refreshCart() // Revert
       dispatch({
         type: 'ADD_NOTIFICATION',
@@ -430,7 +426,6 @@ export function GlobalStateProvider({children}: {children: ReactNode}) {
         : []
       dispatch({type: 'SET_CART_ITEMS', payload: cartItems})
     } catch (error) {
-      console.error('Failed to refresh cart:', error)
       dispatch({type: 'SET_CART_ERROR', payload: 'Failed to load cart'})
       dispatch({type: 'SET_CART_ITEMS', payload: []}) // Set empty array on error
     } finally {
@@ -444,7 +439,6 @@ export function GlobalStateProvider({children}: {children: ReactNode}) {
       const userProfile = await getUserProfile()
       dispatch({type: 'SET_USER_PROFILE', payload: userProfile})
     } catch (error) {
-      console.error('Failed to refresh user profile:', error)
       dispatch({type: 'SET_USER_ERROR', payload: 'Failed to load profile'})
     } finally {
       dispatch({type: 'SET_USER_LOADING', payload: false})
@@ -482,8 +476,14 @@ export function GlobalStateProvider({children}: {children: ReactNode}) {
     markNotificationsRead
   }
 
+  const context = {
+    state,
+    dispatch,
+    actions
+  }
+
   return (
-    <GlobalStateContext.Provider value={{state, dispatch, actions}}>
+    <GlobalStateContext.Provider value={context}>
       {children}
     </GlobalStateContext.Provider>
   )

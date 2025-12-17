@@ -6,6 +6,7 @@ import {getSubCategoryById, SubCategory} from '../../../_api/subcategories'
 import {getProductsByCategory} from '../../../_api/products'
 import {Product} from '@/types'
 import {ProductCard} from '../../../_components/product-card'
+import Logger from '@/app/_components/ui/logger'
 import LoadingSpinner from '../../../_components/LoadingSpinner'
 
 export default function SubCategoryDetails() {
@@ -72,9 +73,10 @@ export default function SubCategoryDetails() {
         )}
 
         {error && (
-          <div className="max-w-md mx-auto bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-4 text-center text-sm">
-            {error}
-          </div>
+          <Logger
+            logs={[{id: 'error', type: 'error', message: error}]}
+            className="max-w-md mx-auto"
+          />
         )}
 
         {!loading && !error && subCategory && (

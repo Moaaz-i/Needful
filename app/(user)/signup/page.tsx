@@ -39,13 +39,11 @@ export default function Signup() {
   })
 
   useEffect(() => {
-    // Use NextAuth session instead of localStorage
     if (status === 'authenticated') {
       router.replace('/categories')
     }
   }, [router, session, status])
 
-  // Show loading while checking authentication
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-linear-to-br from-amber-50 via-white to-rose-50 flex items-center justify-center p-4">

@@ -28,8 +28,6 @@ export default function EditAddressPage() {
     city: ''
   })
 
-  // Check authentication
-
   useEffect(() => {
     const fetchAddress = async () => {
       try {
@@ -42,8 +40,6 @@ export default function EditAddressPage() {
           router.push('/profile/addresses')
         }
       } catch (error) {
-        toast.error('Error loading address')
-        console.error('Error fetching address:', error)
         router.push('/profile/addresses')
       }
     }
@@ -69,7 +65,6 @@ export default function EditAddressPage() {
       router.push('/profile/addresses')
     } catch (error) {
       toast.error('Error updating address')
-      console.error('Error updating address:', error)
     } finally {
       setIsLoading(false)
     }
