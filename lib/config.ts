@@ -18,6 +18,7 @@ function getBaseUrl(): string {
 
 // API endpoints configuration
 export const apiEndpoints = {
+  base: config.apiUrl,
   // Direct auth endpoints (bypass proxy)
   auth: {
     signin: `${config.apiUrl}/api/v1/auth/signin`,

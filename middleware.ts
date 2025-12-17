@@ -11,7 +11,6 @@ export async function middleware(request: NextRequest) {
     '/wishlist',
     '/cart',
     '/order-card',
-    '/order-cash',
     '/order-success',
     '/api/orders',
     '/api/wishlist',

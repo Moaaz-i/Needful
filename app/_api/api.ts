@@ -1,5 +1,6 @@
 import axios from 'axios'
 import {config, apiEndpoints, requestTypes} from '@/lib/config'
+import {getToken} from 'next-auth/jwt'
 
 let activeRequests = 0
 const loadingListeners = new Set<(count: number) => void>()
@@ -30,20 +31,24 @@ export default function Api(baseURL?: string) {
     }
   })
 
-  api.interceptors.request.use((config) => {
+  api.interceptors.request.use(async (config) => {
     activeRequests += 1
     notifyLoading()
 
-    // Get token only from NextAuth session (no localStorage)
-    let globalToken = ''
+    // Get token using getToken from next-auth/jwt
+    let token = ''
 
-    // Only get from global variable set by useApiToken hook
-    if (typeof window !== 'undefined' && (window as any).__apiToken) {
-      globalToken = (window as any).__apiToken
+    try {
+      if (typeof window !== 'undefined') {
+        // Client-side: get token from session storage or useApiToken hook
+        token = (window as any).__apiToken || ''
+      }
+    } catch (error) {
+      console.error('Error getting token:', error)
     }
 
-    if (globalToken) {
-      config.headers.token = globalToken
+    if (token) {
+      config.headers.token = token
     }
 
     return config

@@ -49,14 +49,12 @@ export interface SingleOrderResponse {
 
 // Create new order
 export const createOrder = async (
-  shippingAddress: ShippingAddress,
-  paymentMethod: 'card' | 'cash' = 'cash'
+  shippingAddress: ShippingAddress
 ): Promise<SingleOrderResponse> => {
   const api = Api()
   try {
     const response = await api.post('/orders', {
-      shippingAddress,
-      paymentMethod
+      shippingAddress
     })
     return response.data
   } catch (error: any) {
@@ -111,13 +109,14 @@ export const updateOrderStatus = async (
 // Create checkout session for card payment
 export const createCheckoutSession = async (
   cartId: string,
-  returnUrl: string
+  returnUrl: string,
+  data: {}
 ): Promise<{session: {url: string}}> => {
   const api = Api()
   try {
     const response = await api.post(
       `/orders/checkout-session/${cartId}`,
-      {},
+      data,
       {
         params: {url: returnUrl}
       }

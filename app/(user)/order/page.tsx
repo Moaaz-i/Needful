@@ -5,25 +5,30 @@ import {useRouter} from 'next/navigation'
 import {useSession} from 'next-auth/react'
 import Link from 'next/link'
 import {getCart, CartItem} from '../../_api/cart'
-import {createOrder} from '../../_api/orders'
+import {createCheckoutSession, createOrder} from '../../_api/orders'
 import {
   FiArrowLeft,
   FiUser,
   FiPhone,
   FiMapPin,
   FiCreditCard,
-  FiCheck
+  FiCheck,
+  FiLoader
 } from 'react-icons/fi'
-import {Address, getAddresses} from '@/app/_api/addresses'
+import {config} from '@/lib/config'
+import {getAddresses} from '@/app/_api/addresses'
+import {Address} from '@/app/_api/addresses'
 
 interface OrderFormData {
   firstName: string
   lastName: string
+  phone: string
   address: string
+  city: string
   notes: string
 }
 
-export default function OrderCashPage() {
+export default function OrderCardPage() {
   const {data: session} = useSession()
   const router = useRouter()
   const [items, setItems] = useState<CartItem[]>([])
@@ -31,33 +36,29 @@ export default function OrderCashPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [addresses, setAddresses] = useState<{data: Address[]}>()
-
-  useEffect(() => {
-    getAddresses()
-      .then((res) =>
-        setAddresses({
-          data: res.data
-        })
-      )
-      .catch((err) => console.error(err))
-  }, [])
+  const [addresses, setAddresses] = useState<Address[] | null>(null)
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('')
+  const [useNewAddress, setUseNewAddress] = useState(false)
 
   const [formData, setFormData] = useState<OrderFormData>({
     firstName: '',
     lastName: '',
+    phone: '',
     address: '',
+    city: '',
     notes: ''
   })
 
   const [errors, setErrors] = useState<Partial<OrderFormData>>({})
-  const [notificationSent, setNotificationSent] = useState(false)
-  const [isSendingNotification, setIsSendingNotification] = useState(false)
-  const [orderCreated, setOrderCreated] = useState(false)
-  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null)
 
   useEffect(() => {
     loadCart()
+    const getAdress = async () => {
+      let res = await getAddresses()
+      setAddresses(res.data)
+    }
+
+    getAdress()
   }, [])
 
   const loadCart = async () => {
@@ -89,8 +90,24 @@ export default function OrderCashPage() {
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required'
     }
-    if (!formData.address.trim()) {
-      newErrors.address = 'Address is required'
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required'
+    } else if (
+      !useNewAddress &&
+      !/^(01[0-2]|015)[0-9]{8}$/.test(formData.phone)
+    ) {
+      newErrors.phone = 'Please enter a valid Egyptian phone number'
+    }
+
+    if (useNewAddress) {
+      if (!formData.address.trim()) {
+        newErrors.address = 'Address is required'
+      }
+      if (!formData.city.trim()) {
+        newErrors.city = 'City is required'
+      }
+    } else if (!selectedAddressId) {
+      newErrors.address = 'Please select an address'
     }
 
     setErrors(newErrors)
@@ -101,53 +118,6 @@ export default function OrderCashPage() {
     setFormData((prev) => ({...prev, [field]: value}))
     if (errors[field]) {
       setErrors((prev) => ({...prev, [field]: ''}))
-    }
-  }
-
-  const handleSendNotification = async () => {
-    if (!validateForm()) {
-      return
-    }
-
-    try {
-      setIsSendingNotification(true)
-      setError(null)
-
-      // First create the order to get an order ID
-      const orderData = {
-        shippingAddress: {
-          details: formData.address,
-          phone:
-            addresses?.data.find(
-              (addr) => `${addr.details}, ${addr.city}` === formData.address
-            )?.phone || '',
-          city:
-            addresses?.data.find(
-              (addr) => `${addr.details}, ${addr.city}` === formData.address
-            )?.city || ''
-        },
-        paymentMethod: 'cash' as const
-      }
-
-      console.log('Creating order with data:', orderData)
-      const orderResult = await createOrder(
-        orderData.shippingAddress,
-        orderData.paymentMethod
-      )
-
-      setOrderCreated(true)
-      setCreatedOrderId(orderResult.data?.order?._id || null)
-
-      // Notification functionality removed - just mark as sent
-      setNotificationSent(true)
-      setTimeout(() => setNotificationSent(false), 3000)
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        'Failed to process order. Please try again.'
-      setError(msg)
-    } finally {
-      setIsSendingNotification(false)
     }
   }
 
@@ -162,40 +132,59 @@ export default function OrderCashPage() {
       setIsSubmitting(true)
       setError(null)
 
-      if (orderCreated && createdOrderId) {
-        // Order already created, just redirect to success
-        router.push('/order-success')
-        return
+      // Get address data
+      let addressData
+      if (useNewAddress) {
+        addressData = {
+          details: formData.address,
+          phone: formData.phone,
+          city: formData.city
+        }
+      } else {
+        const selectedAddress = addresses?.find(
+          (addr) => addr._id === selectedAddressId
+        )
+        if (!selectedAddress) {
+          throw new Error('Selected address not found')
+        }
+        addressData = {
+          details: selectedAddress.details,
+          phone: selectedAddress.phone,
+          city: selectedAddress.city
+        }
       }
 
       // Create order data in the expected format
       const orderData = {
-        shippingAddress: {
-          details: formData.address,
-          phone:
-            addresses?.data.find(
-              (addr) => `${addr.details}, ${addr.city}` === formData.address
-            )?.phone || '',
-          city:
-            addresses?.data.find(
-              (addr) => `${addr.details}, ${addr.city}` === formData.address
-            )?.city || ''
-        },
-        paymentMethod: 'cash' as const
+        shippingAddress: addressData
       }
 
-      const orderResult = await createOrder(
-        orderData.shippingAddress,
-        orderData.paymentMethod
+      // Get cart ID from the cart API response
+      let cartId = ''
+      try {
+        const cartResponse = await getCart()
+        if (cartResponse.data?._id) {
+          cartId = cartResponse.data._id
+        } else {
+          throw new Error('No cart ID found')
+        }
+      } catch (error) {
+        console.error('Failed to get cart:', error)
+        throw new Error('Failed to process your cart. Please try again.')
+      }
+
+      const returnUrl = config.nextAuthUrl
+
+      const checkoutSession = await createCheckoutSession(
+        cartId,
+        returnUrl,
+        orderData
       )
 
-      // Redirect to success page or show success message
-      router.push('/order-success')
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        'Failed to create order. Please try again.'
-      setError(msg)
+      // Redirect to payment gateway or success page
+      if (checkoutSession?.session?.url) {
+        window.location.href = checkoutSession.session.url
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -240,10 +229,10 @@ export default function OrderCashPage() {
             Back to Cart
           </Link>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
-            Cash on Delivery
+            Card Payment
           </h1>
           <p className="mt-2 text-slate-600 text-sm md:text-base">
-            Complete your order details for cash on delivery.
+            Complete your order details for secure card payment.
           </p>
         </header>
 
@@ -310,6 +299,42 @@ export default function OrderCashPage() {
                   )}
                 </div>
               </div>
+
+              {/* Phone Number - Only show when using new address */}
+              {useNewAddress && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent ${
+                      errors.phone ? 'border-rose-500' : 'border-slate-300'
+                    }`}
+                    placeholder="01xxxxxxxxx"
+                  />
+                  {errors.phone && (
+                    <p className="mt-1 text-xs text-rose-500">{errors.phone}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Phone Display - Only show when using existing address */}
+              {!useNewAddress && selectedAddressId && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Phone Number
+                  </label>
+                  <div className="w-full px-4 py-3 border border-slate-200 rounded-lg bg-slate-50 text-slate-600">
+                    {
+                      addresses?.find((addr) => addr._id === selectedAddressId)
+                        ?.phone
+                    }
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* Shipping Information */}
@@ -322,45 +347,127 @@ export default function OrderCashPage() {
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Address *
-                  </label>
-                  <div className="flex gap-2">
+                {/* Address Selection */}
+                {addresses && addresses.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Select Address *
+                    </label>
                     <select
-                      value={formData.address}
-                      onChange={(e) =>
-                        handleInputChange('address', e.target.value)
-                      }
-                      className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent ${
+                      value={selectedAddressId}
+                      onChange={(e) => {
+                        setSelectedAddressId(e.target.value)
+                        setUseNewAddress(false)
+                        if (errors.address) {
+                          setErrors((prev) => ({...prev, address: ''}))
+                        }
+                        // Auto-populate phone from selected address
+                        const selectedAddress = addresses?.find(
+                          (addr) => addr._id === e.target.value
+                        )
+                        if (selectedAddress) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            phone: selectedAddress.phone
+                          }))
+                        }
+                      }}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent ${
                         errors.address ? 'border-rose-500' : 'border-slate-300'
                       }`}
                     >
-                      <option value="">Select your address</option>
-                      {addresses?.data.map((addressData) => (
-                        <option
-                          key={addressData._id}
-                          value={`${addressData.details}, ${addressData.city}`}
-                        >
-                          {addressData.name} - {addressData.details},{' '}
-                          {addressData.city}
+                      <option value="">Choose an address...</option>
+                      {addresses.map((address) => (
+                        <option key={address._id} value={address._id}>
+                          {address.name} - {address.city}, {address.details}
                         </option>
                       ))}
                     </select>
-                    <Link
-                      href="/profile/addresses"
-                      className="inline-flex items-center justify-center px-4 py-3 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors"
-                      title="Add new address"
-                    >
-                      <FiMapPin className="w-4 h-4" />
-                    </Link>
+                    {errors.address && (
+                      <p className="mt-1 text-xs text-rose-500">
+                        {errors.address}
+                      </p>
+                    )}
                   </div>
-                  {errors.address && (
-                    <p className="mt-1 text-xs text-rose-500">
-                      {errors.address}
-                    </p>
-                  )}
+                )}
+
+                {/* New Address Option */}
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    id="newAddress"
+                    checked={useNewAddress}
+                    onChange={(e) => {
+                      setUseNewAddress(e.target.checked)
+                      setSelectedAddressId('')
+                      // Clear phone when switching to new address
+                      if (e.target.checked) {
+                        setFormData((prev) => ({...prev, phone: ''}))
+                      }
+                      if (errors.address) {
+                        setErrors((prev) => ({...prev, address: ''}))
+                      }
+                    }}
+                    className="mr-2"
+                  />
+                  <label
+                    htmlFor="newAddress"
+                    className="text-sm font-medium text-slate-700 cursor-pointer"
+                  >
+                    Add a new address
+                  </label>
                 </div>
+
+                {/* New Address Form */}
+                {useNewAddress && (
+                  <div className="space-y-4 pl-6 border-l-2 border-slate-200">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        City *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.city}
+                        onChange={(e) =>
+                          handleInputChange('city', e.target.value)
+                        }
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent ${
+                          errors.city ? 'border-rose-500' : 'border-slate-300'
+                        }`}
+                        placeholder="Enter your city"
+                      />
+                      {errors.city && (
+                        <p className="mt-1 text-xs text-rose-500">
+                          {errors.city}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Address *
+                      </label>
+                      <textarea
+                        value={formData.address}
+                        onChange={(e) =>
+                          handleInputChange('address', e.target.value)
+                        }
+                        rows={3}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none ${
+                          errors.address
+                            ? 'border-rose-500'
+                            : 'border-slate-300'
+                        }`}
+                        placeholder="Enter your full address"
+                      />
+                      {errors.address && (
+                        <p className="mt-1 text-xs text-rose-500">
+                          {errors.address}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -428,57 +535,35 @@ export default function OrderCashPage() {
                 </div>
               </div>
 
-              {/* Cash on Delivery Notice */}
-              <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              {/* Card Payment Notice */}
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <FiCreditCard className="w-4 h-4 text-amber-600 mt-0.5" />
+                  <FiCreditCard className="w-4 h-4 text-blue-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-amber-800">
-                      Cash on Delivery
+                    <p className="text-sm font-medium text-blue-800">
+                      Secure Card Payment
                     </p>
-                    <p className="text-xs text-amber-700 mt-1">
-                      Pay with cash when your order arrives. Please have the
-                      exact amount ready.
+                    <p className="text-xs text-blue-700 mt-1">
+                      You will be redirected to our secure payment gateway to
+                      complete your transaction.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Send Notification Button */}
-              <button
-                type="button"
-                onClick={handleSendNotification}
-                disabled={isSendingNotification || isSubmitting}
-                className="w-full mt-3 bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSendingNotification ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Sending Notification...
-                  </span>
-                ) : notificationSent ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <FiCheck className="w-4 h-4" />
-                    Notification Sent!
-                  </span>
-                ) : (
-                  'Send Order Notification'
-                )}
-              </button>
-
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full mt-3 bg-rose-500 hover:bg-rose-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed mobile-cart-checkout"
+                className="w-full mt-6 bg-rose-500 hover:bg-rose-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed mobile-cart-checkout"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Processing Order...
+                    <FiLoader className="animate-spin w-4 h-4" />
+                    Processing Payment...
                   </span>
                 ) : (
-                  'Place Order'
+                  'Proceed to Payment'
                 )}
               </button>
 

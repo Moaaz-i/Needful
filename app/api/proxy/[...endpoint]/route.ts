@@ -19,16 +19,6 @@ function getEndpointPath(endpoint: string): string {
   return `/${endpointPath}`
 }
 
-// Public endpoints that don't require authentication
-const publicEndpoints = [
-  'products',
-  'categories',
-  'brands',
-  'subcategories',
-  'auth/login',
-  'auth/signup'
-]
-
 // Rate limiting storage (in production, use Redis or database)
 const rateLimitStore = new Map<string, {count: number; resetTime: number}>()
 
@@ -167,10 +157,9 @@ async function handleRequest(request: NextRequest, method: string) {
     // Handle response
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`API Error (${response.status}):`, errorText)
 
       const errorResponse = NextResponse.json(
-        {error: `API request failed: ${response.status}`},
+        {error: JSON.parse(errorText)},
         {status: response.status}
       )
       return addSecurityHeaders(errorResponse)

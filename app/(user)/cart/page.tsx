@@ -291,19 +291,13 @@ export default function CartPage() {
                 <p className="text-xs text-slate-500 mb-3">Payment Options</p>
                 <div className="space-y-2">
                   <Link
-                    href="/order-card"
+                    href="/order"
                     className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-rose-500 px-4 py-3 text-sm font-semibold text-white hover:bg-rose-400 transition-colors mobile-cart-checkout"
                   >
                     <FiCreditCard className="w-4 h-4" />
-                    Pay with Card
+                    Pay
                   </Link>
-                  <Link
-                    href="/order-cash"
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-rose-500 text-rose-500 px-4 py-3 text-sm font-semibold hover:bg-rose-50 transition-colors mobile-cart-checkout"
-                  >
-                    <FiCreditCard className="w-4 h-4" />
-                    Cash on Delivery
-                  </Link>
+
                   <Link
                     href="/products"
                     className="text-rose-500 hover:underline text-sm"

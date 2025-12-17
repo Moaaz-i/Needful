@@ -1,7 +1,7 @@
 'use client'
 
 import {useEffect, useState} from 'react'
-import {getUserOrders, OrderListResponse} from '@/app/_api/orders'
+import {getUserOrders} from '@/app/_api/orders'
 import {toast} from 'react-hot-toast'
 import Link from 'next/link'
 import {
