@@ -169,12 +169,12 @@ export default function Products() {
       )
 
       if (validSubcategories.length !== filters.subcategory.length) {
-        handleFilterChange('subcategory', validSubcategories)
+        setFilters((prev) => ({...prev, subcategory: validSubcategories}))
       }
     } else {
       setFilteredSubcategories(subcategories)
     }
-  }, [filters.category, subcategories, filters.subcategory, handleFilterChange])
+  }, [filters.category, subcategories, filters.subcategory])
 
   // Apply filters and sorting - computed value
   const filteredProducts = useMemo(() => {

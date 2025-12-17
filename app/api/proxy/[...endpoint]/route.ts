@@ -22,7 +22,7 @@ function getEndpointPath(endpoint: string): string {
 // Rate limiting storage (in production, use Redis or database)
 const rateLimitStore = new Map<string, {count: number; resetTime: number}>()
 
-// Rate limiting middleware
+// Rate limiting function
 function checkRateLimit(
   identifier: string,
   limit: number = 100,

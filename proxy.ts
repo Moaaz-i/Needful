@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server'
 import type {NextRequest} from 'next/server'
 import {getToken} from 'next-auth/jwt'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const {pathname} = request.nextUrl
 
   // Define protected routes that require authentication
@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
     // Allow the request to proceed
     return NextResponse.next()
   } catch (error) {
-    console.error('Middleware error:', error)
+    console.error('Proxy error:', error)
 
     // If there's an error and it's a protected route, redirect to login
     if (isProtectedRoute) {
