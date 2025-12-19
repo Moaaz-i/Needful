@@ -21,7 +21,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith(route)
   )
 
-  const authRoutes = ['/login', '/signup']
+  const authRoutes = ['/auth/login', '/auth/signup']
 
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
 
@@ -29,7 +29,7 @@ export async function proxy(request: NextRequest) {
     const token = await getToken({req: request})
 
     if (isProtectedRoute && !token) {
-      const loginUrl = new URL('/login', request.url)
+      const loginUrl = new URL('/auth/login', request.url)
       loginUrl.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(loginUrl)
     }
@@ -43,7 +43,7 @@ export async function proxy(request: NextRequest) {
     console.error('Proxy error:', error)
 
     if (isProtectedRoute) {
-      const loginUrl = new URL('/login', request.url)
+      const loginUrl = new URL('/auth/login', request.url)
       loginUrl.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(loginUrl)
     }

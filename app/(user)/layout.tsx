@@ -22,16 +22,14 @@ export default function UserLayout({children}: {children: ReactNode}) {
   }, [status])
 
   useApiToken()
-
+  const isAuthPage = pathname.startsWith('/auth')
   useEffect(() => {
-    const isAuthPage = pathname === '/login' || pathname === '/signup'
-
     if (status === 'loading') return
 
     const isAuthenticated = status === 'authenticated'
 
     if (!isAuthenticated && !isAuthPage) {
-      router.replace('/login')
+      router.replace('/auth/login')
       return
     }
 
@@ -39,8 +37,6 @@ export default function UserLayout({children}: {children: ReactNode}) {
       router.replace('/')
     }
   }, [pathname, router, session, status])
-
-  const isAuthPage = pathname === '/login' || pathname === '/signup'
 
   if (status === 'loading') {
     return (

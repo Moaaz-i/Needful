@@ -5,7 +5,7 @@ import {useRouter} from 'next/navigation'
 import {useSession} from 'next-auth/react'
 import {useForm} from 'react-hook-form'
 import {zodResolver} from '@hookform/resolvers/zod'
-import {signup, SignupPayload} from '../../_api/signup'
+import {signup, SignupPayload} from '../../../_api/signup'
 import {signupSchema, SignupFormData} from '@/lib/validations'
 import {Button} from '@/app/_components/ui/button'
 import {Input} from '@/app/_components/ui/input'
@@ -63,7 +63,7 @@ export default function Signup() {
 
     try {
       await signup(data as SignupPayload)
-      router.push('/login')
+      router.push('/auth/login')
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
@@ -235,7 +235,7 @@ export default function Signup() {
           <p className="text-xs text-slate-500 text-center">
             Already have an account?{' '}
             <Link
-              href="/login"
+              href="/auth/login"
               className="font-medium text-rose-500 hover:text-rose-600 transition-colors"
             >
               Sign in

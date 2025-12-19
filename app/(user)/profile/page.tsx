@@ -45,7 +45,7 @@ export default function ProfilePage() {
     if (status === 'loading') return
 
     if (!session) {
-      router.push('/login')
+      router.push('/auth/login')
       return
     }
 
@@ -85,9 +85,9 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     try {
       await signOut({redirect: false})
-      router.push('/login')
+      router.push('/auth/login')
     } catch (error) {
-      router.push('/login')
+      router.push('/auth/login')
     }
   }
 
@@ -107,7 +107,7 @@ export default function ProfilePage() {
             Profile not found
           </h2>
           <button
-            onClick={() => router.push('/login')}
+            onClick={() => router.push('/auth/login')}
             className="bg-rose-500 text-white px-6 py-2 rounded-lg hover:bg-rose-600 transition-colors"
           >
             Go to Login

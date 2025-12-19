@@ -20,5 +20,11 @@ export const signupSchema = z
     path: ['rePassword']
   })
 
+export const forgetPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  code: z.number().min(6)
+})
+
 export type LoginFormData = z.infer<typeof loginSchema>
 export type SignupFormData = z.infer<typeof signupSchema>
+export type forgetPasswordFormData = z.infer<typeof forgetPasswordSchema>

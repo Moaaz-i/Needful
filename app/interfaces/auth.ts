@@ -21,6 +21,11 @@ export interface SignupPayload {
   phone?: string
 }
 
+export interface ForgetPasswordPayload {
+  message: string
+  statusMsg: string
+}
+
 export interface Session {
   user: {
     id: string

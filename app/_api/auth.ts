@@ -1,3 +1,4 @@
+import {ForgetPasswordPayload} from '../interfaces'
 import Api from './api'
 
 export interface User {
@@ -61,4 +62,40 @@ export async function getUserProfile(): Promise<User> {
   } catch (error) {
     throw error
   }
+}
+
+export async function forgetPassword(
+  email: string
+): Promise<ForgetPasswordPayload> {
+  const api = Api()
+
+  return await api
+    .post('/auth/forgotPasswords', {
+      email: email
+    })
+    .then((res) => res.data)
+    .catch((err) => err)
+}
+
+export async function verifyResetCode(code: string) {
+  const api = Api()
+
+  return await api
+    .post('/auth/verifyResetCode', {
+      resetCode: code
+    })
+    .then((res) => res.data)
+    .catch((err) => err)
+}
+
+export async function ResetPassowrd(email: string, newPassword: string) {
+  const api = Api()
+
+  return await api
+    .put('/auth/resetPassword', {
+      email,
+      newPassword
+    })
+    .then((res) => res)
+    .catch((err) => err)
 }

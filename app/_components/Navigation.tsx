@@ -28,9 +28,9 @@ export default function Navigation() {
     try {
       // Use NextAuth signOut
       const {signOut} = await import('next-auth/react')
-      await signOut({callbackUrl: '/login'})
+      await signOut({callbackUrl: '/auth/login'})
     } catch (error) {
-      router.push('/login')
+      router.push('/auth/login')
     }
   }
 

@@ -184,12 +184,18 @@ export default function Login() {
           <p className="text-sm md:text-base text-slate-500">
             Don&apos;t have an account?{' '}
             <Link
-              href="/signup"
+              href="/auth/signup"
               className="font-medium text-rose-500 hover:text-rose-600 transition-colors mobile-transition"
             >
               Create an account
             </Link>
           </p>
+          <Link
+            href="/auth/forgetPassword"
+            className="font-medium text-center text-rose-500 hover:text-rose-600 transition-colors mobile-transition"
+          >
+            forget password ?
+          </Link>
         </div>
       </div>
     </main>
