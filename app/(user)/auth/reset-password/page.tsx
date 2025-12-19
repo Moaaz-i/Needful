@@ -57,10 +57,10 @@ export default function ResetPasswordPage() {
       const res = await ResetPassowrd(email, data.newPassword)
       console.log(res)
       setMessage(
-        res.response.data.error.message || 'Password reset successfully'
+        res?.response?.data?.error?.message || 'Password reset successfully'
       )
 
-      if (res.data.token) {
+      if (res?.data?.token) {
         setTimeout(() => {
           router.push('/auth/login')
         }, 2000)
