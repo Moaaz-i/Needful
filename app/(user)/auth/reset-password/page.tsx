@@ -60,11 +60,7 @@ export default function ResetPasswordPage() {
         res.response.data.error.message || 'Password reset successfully'
       )
 
-      if (
-        res.data.status === 'success' ||
-        res.data.success ||
-        res.data.message?.includes('success')
-      ) {
+      if (res.data.token) {
         setTimeout(() => {
           router.push('/auth/login')
         }, 2000)
