@@ -32,7 +32,7 @@ export const getUserOrders = async (): Promise<OrderResponse> => {
 
   try {
     const response = await api.get(`/orders/user/${userId}`)
-    return response.data
+    return response
   } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Failed to fetch orders')
   }

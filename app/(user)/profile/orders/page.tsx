@@ -15,45 +15,7 @@ import {
   FiXCircle,
   FiTruck
 } from 'react-icons/fi'
-
-interface Product {
-  _id: string
-  title: string
-  imageCover: string
-  price?: number
-}
-
-interface CartItem {
-  _id: string
-  count: number
-  price: number
-  product: Product
-}
-
-interface Order {
-  _id: string
-  id?: number
-  totalOrderPrice: number
-  isPaid: boolean
-  isDelivered: boolean
-  shippingAddress: {
-    phone: string
-    city: string
-    details?: string
-  }
-  paymentMethodType: 'cash' | 'card'
-  createdAt: string
-  updatedAt: string
-  cartItems: CartItem[]
-  user?: {
-    name: string
-    email: string
-    phone: string
-  }
-  taxPrice?: number
-  shippingPrice?: number
-  status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
-}
+import {Order} from '@/app/interfaces'
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -62,17 +24,11 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     try {
       const response = await getUserOrders()
-      console.log('Full API Response:', response) // Debug log
-      console.log('Response data:', response?.data) // Debug log
-      console.log('Is data array?', Array.isArray(response?.data)) // Debug log
+      console.log('Full API Response:', response)
 
-      if (response && response.data && Array.isArray(response.data)) {
-        console.log('Setting orders:', response.data.length, 'orders')
-        setOrders(response.data as unknown as Order[])
-      } else {
-        console.log('No valid orders data found, setting empty array')
-        setOrders([])
-      }
+      setOrders(response?.data)
+
+      console.log(orders)
     } catch (error) {
       console.error('Error fetching orders:', error)
       toast.error('Error loading orders')

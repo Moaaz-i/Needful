@@ -1,3 +1,4 @@
+import {CartItem} from './cart'
 import {Product} from './product'
 import {User} from './user'
 
@@ -17,23 +18,31 @@ export interface OrderItem {
 
 export interface Order {
   _id: string
-  user: string | User
-  orderItems: OrderItem[]
-  shippingAddress: ShippingAddress
+  id?: number
   totalOrderPrice: number
-  paymentMethodType: 'card' | 'cash'
   isPaid: boolean
-  paidAt?: string
   isDelivered: boolean
-  deliveredAt?: string
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+  shippingAddress: {
+    phone: string
+    city: string
+    details?: string
+  }
+  paymentMethodType: 'cash' | 'card'
   createdAt: string
   updatedAt: string
+  cartItems: CartItem[]
+  user?: {
+    name: string
+    email: string
+    phone: string
+  }
+  taxPrice?: number
+  shippingPrice?: number
+  status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
 }
 
 export interface OrderResponse {
-  status: string
-  results: number
+  status: number
   data: Order[]
 }
 
