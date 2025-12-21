@@ -1,6 +1,5 @@
 import axios from 'axios'
-import {config, apiEndpoints, requestTypes} from '@/lib/config'
-import {getToken} from 'next-auth/jwt'
+import {apiEndpoints, requestTypes} from '@/lib/config'
 import {toast} from 'react-hot-toast'
 
 let activeRequests = 0
