@@ -1,8 +1,8 @@
 // Environment configuration
 export const config = {
   apiUrl: process.env.NEXT_PUBLIC_API_URL
-    ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1`
-    : "https://ecommerce.routemisr.com/api/v1",
+    ? `${process.env.NEXT_PUBLIC_API_URL}`
+    : "https://ecommerce.routemisr.com",
   nextAuthUrl: process.env.NEXTAUTH_URL || getBaseUrl(),
   proxyUrl: "/api/proxy",
 };
