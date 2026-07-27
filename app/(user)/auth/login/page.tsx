@@ -105,7 +105,7 @@ export default function Login() {
             <FormField
               control={form.control}
               name="email"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-slate-700 font-medium">
                     Email
@@ -126,7 +126,7 @@ export default function Login() {
             <FormField
               control={form.control}
               name="password"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-slate-700 font-medium">
                     Password
@@ -135,7 +135,7 @@ export default function Login() {
                     <div className="relative">
                       <Input
                         placeholder="Enter your password"
-                        type={showPassword ? 'text' : 'password'}
+                        type={showPassword ? "text" : "password"}
                         {...field}
                         className="rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm md:text-base outline-none transition-all duration-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 pr-12 mobile-transition"
                       />
@@ -146,7 +146,7 @@ export default function Login() {
                       >
                         <i
                           className={`fa-solid ${
-                            showPassword ? 'fa-eye-slash' : 'fa-eye'
+                            showPassword ? "fa-eye-slash" : "fa-eye"
                           } text-sm md:text-base`}
                         ></i>
                       </button>
@@ -168,7 +168,7 @@ export default function Login() {
                   <span>Signing in...</span>
                 </span>
               ) : (
-                'Log in'
+                "Log in"
               )}
             </Button>
           </form>
@@ -176,7 +176,7 @@ export default function Login() {
 
         <div className="mt-8 pt-6 border-t border-slate-100 text-center mobile-text">
           <p className="text-sm md:text-base text-slate-500">
-            Don&apos;t have an account?{' '}
+            Don&apos;t have an account?{" "}
             <Link
               href="/auth/signup"
               className="font-medium text-rose-500 hover:text-rose-600 transition-colors mobile-transition"
@@ -184,14 +184,52 @@ export default function Login() {
               Create an account
             </Link>
           </p>
-          <Link
-            href="/auth/forgetPassword"
-            className="font-medium text-center text-rose-500 hover:text-rose-600 transition-colors mobile-transition"
-          >
-            forget password ?
-          </Link>
+          <div className="mt-2">
+            <Link
+              href="/auth/forgetPassword"
+              className="text-sm font-medium text-rose-500 hover:text-rose-600 transition-colors mobile-transition"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <h3 className="text-center text-sm font-medium text-slate-500 mb-4">
+            Demo Account
+          </h3>
+          <div className="overflow-hidden rounded-lg border border-slate-200">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
+                  >
+                    Email
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
+                  >
+                    Password
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-slate-200">
+                <tr>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-slate-800">
+                    customer@gmail.com
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-slate-800">
+                    customer1234
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </main>
-  )
+  );
 }
