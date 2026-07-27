@@ -1,22 +1,22 @@
 'use client'
 
-import {useEffect, useState} from 'react'
-import {useRouter} from 'next/navigation'
-import {useSession, signIn} from 'next-auth/react'
-import {useForm} from 'react-hook-form'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {loginSchema, LoginFormData} from '@/lib/validations'
-import {Button} from '@/app/_components/ui/button'
-import {Input} from '@/app/_components/ui/input'
+import { Button } from "@/app/_components/ui/button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
-} from '@/app/_components/ui/form'
-import Link from 'next/link'
+  FormMessage,
+} from "@/app/_components/ui/form";
+import { Input } from "@/app/_components/ui/input";
+import { LoginFormData, loginSchema } from "@/lib/validations";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn, useSession } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 export default function Login() {
   const router = useRouter()
@@ -57,24 +57,18 @@ export default function Login() {
     setIsLoading(true)
 
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
-        callbackUrl: '/',
-        redirect: false
-      })
+        callbackUrl: "/",
+        redirect: false,
+      });
 
       if (result?.error) {
-        const errorMessage =
-          result.error === 'CredentialsSignin'
-            ? 'Invalid email or password'
-            : result.error
-        setError(errorMessage)
-      } else if (result?.ok) {
-        window.location.href = '/'
+        setError(result?.error);
       }
+
     } catch (err: any) {
-      console.error('Login error:', err)
       setError('Login failed. Please try again.')
     } finally {
       setIsLoading(false)

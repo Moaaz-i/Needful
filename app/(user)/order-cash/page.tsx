@@ -1,20 +1,13 @@
 'use client'
 
-import {useEffect, useState} from 'react'
-import {useRouter} from 'next/navigation'
-import {useSession} from 'next-auth/react'
+import { Address, getAddresses } from "@/app/_api/addresses";
+import { useSession } from "next-auth/react";
 import Link from 'next/link'
-import {getCart, CartItem} from '../../_api/cart'
-import {createOrder} from '../../_api/orders'
-import {
-  FiArrowLeft,
-  FiUser,
-  FiPhone,
-  FiMapPin,
-  FiCreditCard,
-  FiCheck
-} from 'react-icons/fi'
-import {Address, getAddresses} from '@/app/_api/addresses'
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { FiArrowLeft, FiCreditCard, FiMapPin, FiUser } from "react-icons/fi";
+import { CartItem, getCart } from "../../_api/cart";
+import { createOrder } from "../../_api/orders";
 
 interface OrderFormData {
   firstName: string
@@ -131,15 +124,14 @@ export default function OrderCashPage() {
       let cartId = ''
 
       try {
-        const cartResponse = await getCart()
+        const cartResponse = await getCart();
         if (cartResponse.data?._id) {
-          cartId = cartResponse.data._id
+          cartId = cartResponse.data._id;
         } else {
-          throw new Error('No cart ID found')
+          throw new Error("No cart ID found");
         }
       } catch (error) {
-        console.error('Failed to get cart:', error)
-        throw new Error('Failed to process your cart. Please try again.')
+        throw new Error("Failed to process your cart. Please try again.");
       }
 
       await createOrder(cartId, orderData.shippingAddress)

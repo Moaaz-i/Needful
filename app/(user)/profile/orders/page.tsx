@@ -23,14 +23,11 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const response = await getUserOrders()
-      console.log('Full API Response:', response)
+      const response = await getUserOrders();
 
       setOrders(response?.data)
 
-      console.log(orders)
     } catch (error) {
-      console.error('Error fetching orders:', error)
       toast.error('Error loading orders')
       setOrders([])
     } finally {

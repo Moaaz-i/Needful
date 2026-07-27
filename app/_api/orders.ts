@@ -28,8 +28,6 @@ export const getUserOrders = async (): Promise<OrderResponse> => {
     .then((res) => res.data.decoded.id)
     .catch((err) => toast.error(err))
 
-  console.log(userId)
-
   try {
     const response = await api.get(`/orders/user/${userId}`)
     return response

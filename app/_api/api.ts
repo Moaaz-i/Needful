@@ -62,36 +62,45 @@ export default function Api(baseURL?: string) {
       notifyLoading()
 
       // Handle different error types
+      // Only show toast notifications on the client side
+      const isClient = typeof window !== 'undefined'
+
       if (error.response) {
         // Server responded with error status
         const status = error.response.status
         const message = error.response.data?.message || 'An error occurred'
 
-        switch (status) {
-          case 401:
-            toast.error('Unauthorized: Please login again')
-            break
-          case 403:
-            toast.error('Forbidden: You do not have permission')
-            break
-          case 404:
-            toast.error('Not found: The requested resource was not found')
-            break
-          case 422:
-            toast.error(`Validation error: ${message}`)
-            break
-          case 500:
-            toast.error('Server error: Please try again later')
-            break
-          default:
-            toast.error(`Error: ${message}`)
+        if (isClient) {
+          switch (status) {
+            case 401:
+              toast.error('Unauthorized: Please login again')
+              break
+            case 403:
+              toast.error('Forbidden: You do not have permission')
+              break
+            case 404:
+              toast.error('Not found: The requested resource was not found')
+              break
+            case 422:
+              toast.error(`Validation error: ${message}`)
+              break
+            case 500:
+              toast.error('Server error: Please try again later')
+              break
+            default:
+              toast.error(`Error: ${message}`)
+          }
         }
       } else if (error.request) {
         // Network error
-        toast.error('Network error: Please check your connection')
+        if (isClient) {
+          toast.error('Network error: Please check your connection')
+        }
       } else {
         // Other error
-        toast.error('An unexpected error occurred')
+        if (isClient) {
+          toast.error('An unexpected error occurred')
+        }
       }
 
       return Promise.reject(error)

@@ -54,7 +54,6 @@ export default function VerifyCodePage() {
         router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`)
       }
     } catch (err: any) {
-      console.log(err)
       const msg =
         err?.response?.data?.message ||
         'Invalid verification code. Please try again.'

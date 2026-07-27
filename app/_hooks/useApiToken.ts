@@ -14,13 +14,12 @@ export function useApiToken() {
         // Use session data directly since getToken is server-side only
         if (session?.accessToken) {
           // Store token in a global variable for API calls
-          ;(window as any).__apiToken = session.accessToken
+          (window as any).__apiToken = session.accessToken;
         } else {
-          delete (window as any).__apiToken
+          delete (window as any).__apiToken;
         }
       } catch (error) {
-        console.error('Error updating API token:', error)
-        delete (window as any).__apiToken
+        delete (window as any).__apiToken;
       }
     }
 

@@ -28,7 +28,6 @@ export function useUserProfile() {
       const userData = await getUserProfile()
       setUser(userData)
     } catch (err: any) {
-      console.error('Error fetching user profile:', err)
       setError(err?.response?.data?.message || 'Failed to fetch user profile')
       // Don't clear user on error, keep existing data
     } finally {

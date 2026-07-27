@@ -54,8 +54,7 @@ export default function ResetPasswordPage() {
     setIsLoading(true)
 
     try {
-      const res = await ResetPassowrd(email, data.newPassword)
-      console.log(res)
+      const res = await ResetPassowrd(email, data.newPassword);
       setMessage(
         res?.response?.data?.error?.message || 'Password reset successfully'
       )
@@ -66,7 +65,6 @@ export default function ResetPasswordPage() {
         }, 2000)
       }
     } catch (err: any) {
-      console.log(err)
       const msg =
         err?.response?.data?.message ||
         'Failed to reset password. Please try again.'

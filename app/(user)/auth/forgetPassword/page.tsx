@@ -1,22 +1,22 @@
 'use client'
 
-import {Component, useState} from 'react'
-import {useRouter} from 'next/navigation'
-import {useSession} from 'next-auth/react'
-import {useForm} from 'react-hook-form'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {Button} from '@/app/_components/ui/button'
-import {Input} from '@/app/_components/ui/input'
+import { forgetPassword } from "@/app/_api/auth";
+import { Button } from "@/app/_components/ui/button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
-} from '@/app/_components/ui/form'
-import {forgetPassword} from '@/app/_api/auth'
-import {z} from 'zod'
+  FormMessage,
+} from "@/app/_components/ui/form";
+import { Input } from "@/app/_components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const emailSchema = z.object({
   email: z.string().email('Please enter a valid email address')
@@ -50,10 +50,9 @@ export default function ForgetPasswordPage() {
         router.push(`/auth/verifyCode?email=${data.email}`)
       }, 1500)
     } catch (err: any) {
-      console.log(err)
       const msg =
-        err?.response?.data?.message ||
-        'Failed to send verification code. Please try again.'
+        err?.response?.data?.error?.message ||
+        "Failed to send verification code. Please try again.";
       setError(msg)
     } finally {
       setIsLoading(false)

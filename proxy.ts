@@ -1,54 +1,52 @@
-import {NextResponse} from 'next/server'
-import type {NextRequest} from 'next/server'
-import {getToken} from 'next-auth/jwt'
+import { getToken } from "next-auth/jwt";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function proxy(request: NextRequest) {
-  const {pathname} = request.nextUrl
+  const { pathname } = request.nextUrl;
 
   const protectedRoutes = [
-    '/profile',
-    '/wishlist',
-    '/cart',
-    '/order-card',
-    '/order-success',
-    '/api/orders',
-    '/api/wishlist',
-    '/api/cart',
-    '/api/addresses'
-  ]
+    "/profile",
+    "/wishlist",
+    "/cart",
+    "/order-card",
+    "/order-success",
+    "/api/orders",
+    "/api/wishlist",
+    "/api/cart",
+    "/api/addresses",
+  ];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  )
+    pathname.startsWith(route),
+  );
 
-  const authRoutes = ['/auth/login', '/auth/signup']
+  const authRoutes = ["/auth/login", "/auth/signup"];
 
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
+  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
   try {
-    const token = await getToken({req: request})
+    const token = await getToken({ req: request });
 
     if (isProtectedRoute && !token) {
-      const loginUrl = new URL('/auth/login', request.url)
-      loginUrl.searchParams.set('callbackUrl', pathname)
-      return NextResponse.redirect(loginUrl)
+      const loginUrl = new URL("/auth/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
     }
 
     if (isAuthRoute && token) {
-      return NextResponse.redirect(new URL('/profile', request.url))
+      return NextResponse.redirect(new URL("/profile", request.url));
     }
 
-    return NextResponse.next()
+    return NextResponse.next();
   } catch (error) {
-    console.error('Proxy error:', error)
-
     if (isProtectedRoute) {
-      const loginUrl = new URL('/auth/login', request.url)
-      loginUrl.searchParams.set('callbackUrl', pathname)
-      return NextResponse.redirect(loginUrl)
+      const loginUrl = new URL("/auth/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
     }
 
-    return NextResponse.next()
+    return NextResponse.next();
   }
 }
 
@@ -62,6 +60,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public (public files)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|public).*)'
-  ]
-}
+    "/((?!api|_next/static|_next/image|favicon.ico|public).*)",
+  ],
+};

@@ -1,23 +1,11 @@
 'use client'
 
-import {useEffect} from 'react'
-import {useRouter} from 'next/navigation'
 import Link from 'next/link'
-import {FiCheck, FiPackage, FiHome, FiShoppingBag} from 'react-icons/fi'
+import { useRouter } from "next/navigation";
+import { FiCheck, FiHome, FiPackage, FiShoppingBag } from "react-icons/fi";
 
 export default function OrderSuccessPage() {
   const router = useRouter()
-
-  useEffect(() => {
-    const clearCart = async () => {
-      try {
-      } catch (error) {
-        console.error('Error clearing cart:', error)
-      }
-    }
-
-    clearCart()
-  }, [router])
 
   return (
     <main className="py-10 px-4">

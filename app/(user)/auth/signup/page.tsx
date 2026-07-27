@@ -1,23 +1,23 @@
 'use client'
 
-import {useEffect, useState} from 'react'
-import {useRouter} from 'next/navigation'
-import {useSession} from 'next-auth/react'
-import {useForm} from 'react-hook-form'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {signup, SignupPayload} from '../../../_api/signup'
-import {signupSchema, SignupFormData} from '@/lib/validations'
-import {Button} from '@/app/_components/ui/button'
-import {Input} from '@/app/_components/ui/input'
+import { Button } from "@/app/_components/ui/button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
-} from '@/app/_components/ui/form'
-import Link from 'next/link'
+  FormMessage,
+} from "@/app/_components/ui/form";
+import { Input } from "@/app/_components/ui/input";
+import { SignupFormData, signupSchema } from "@/lib/validations";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { signup, SignupPayload } from "../../../_api/signup";
 
 export default function Signup() {
   const router = useRouter()
@@ -65,9 +65,10 @@ export default function Signup() {
       await signup(data as SignupPayload)
       router.push('/auth/login')
     } catch (err: any) {
+      console.log(err);
       const msg =
-        err?.response?.data?.message ||
-        'Signup failed. Please check your data and try again.'
+        err?.response?.data?.errors?.msg || err?.response?.data?.message;
+      ("Signup failed. Please check your data and try again.");
       setError(msg)
     } finally {
       setIsLoading(false)

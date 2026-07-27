@@ -159,15 +159,14 @@ export default function OrderCardPage() {
 
       let cartId = ''
       try {
-        const cartResponse = await getCart()
+        const cartResponse = await getCart();
         if (cartResponse.data?._id) {
-          cartId = cartResponse.data._id
+          cartId = cartResponse.data._id;
         } else {
-          throw new Error('No cart ID found')
+          throw new Error("No cart ID found");
         }
       } catch (error) {
-        console.error('Failed to get cart:', error)
-        throw new Error('Failed to process your cart. Please try again.')
+        throw new Error("Failed to process your cart. Please try again.");
       }
 
       const returnUrl = config.nextAuthUrl

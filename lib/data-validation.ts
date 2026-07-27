@@ -42,8 +42,7 @@ export function safeArrayMap<T, R>(
 
 export function createErrorHandler(context: string) {
   return function handle(error: unknown, fallback?: any) {
-    console.error(`[${context}] Error:`, error)
-    if (fallback !== undefined) return fallback
-    throw error
-  }
+    if (fallback !== undefined) return fallback;
+    throw error;
+  };
 }

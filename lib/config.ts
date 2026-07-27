@@ -1,6 +1,6 @@
 // Environment configuration
 export const config = {
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce.routemisr.com',
+  apiUrl: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1` : 'http://localhost:3001/api/v1',
   nextAuthUrl: process.env.NEXTAUTH_URL || getBaseUrl(),
   proxyUrl: '/api/proxy'
 }
@@ -12,7 +12,7 @@ function getBaseUrl(): string {
     return window.location.origin
   } else {
     // Server-side: try to determine from environment or fallback
-    return process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce.routemisr.com'
+    return process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1` : 'http://localhost:3001/api/v1'
   }
 }
 

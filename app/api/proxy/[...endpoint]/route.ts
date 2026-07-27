@@ -71,129 +71,126 @@ export async function DELETE(request: NextRequest) {
 
 async function handleRequest(request: NextRequest, method: string) {
   try {
-    const pathname = request.nextUrl.pathname
-    const endpoint = pathname.replace('/api/proxy/', '')
+    const pathname = request.nextUrl.pathname;
+    const endpoint = pathname.replace("/api/proxy/", "");
 
     // Allow all endpoints - no validation needed
     if (!endpoint) {
       const response = NextResponse.json(
-        {error: 'No endpoint specified'},
-        {status: 400}
-      )
-      return addSecurityHeaders(response)
+        { error: "No endpoint specified" },
+        { status: 400 },
+      );
+      return addSecurityHeaders(response);
     }
 
     // Get client IP for rate limiting
     const clientIP =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown'
+      request.headers.get("x-forwarded-for") ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
 
     // Apply rate limiting
     if (!checkRateLimit(clientIP)) {
       const response = NextResponse.json(
-        {error: 'Too many requests'},
-        {status: 429}
-      )
-      return addSecurityHeaders(response)
+        { error: "Too many requests" },
+        { status: 429 },
+      );
+      return addSecurityHeaders(response);
     }
 
     // Get auth token (optional for all endpoints)
-    const token = await getToken({req: request})
+    const token = await getToken({ req: request });
 
     // Build target URL using dynamic endpoint mapping
-    const targetEndpoint = getEndpointPath(endpoint)
-    const searchParams = request.nextUrl.searchParams.toString()
+    const targetEndpoint = getEndpointPath(endpoint);
+    const searchParams = request.nextUrl.searchParams.toString();
     const targetUrl = `${config.apiUrl}${API_BASE_URL}${targetEndpoint}${
-      searchParams ? `?${searchParams}` : ''
-    }`
+      searchParams ? `?${searchParams}` : ""
+    }`;
 
     // Prepare headers
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'User-Agent': 'Next.js-Proxy/1.0'
-    }
+      "Content-Type": "application/json",
+      "User-Agent": "Next.js-Proxy/1.0",
+    };
 
     // Add auth token if available
     if (token?.accessToken) {
-      headers['token'] = token.accessToken
+      headers["token"] = token.accessToken;
     } else {
       // Check for token in request headers
       const requestToken =
-        request.headers.get('authorization') || request.headers.get('token')
+        request.headers.get("authorization") || request.headers.get("token");
       if (requestToken) {
-        headers['token'] = requestToken.replace('Bearer ', '')
+        headers["token"] = requestToken.replace("Bearer ", "");
       }
     }
 
     // Copy safe headers from original request
-    const safeHeaders = ['accept', 'accept-language', 'cache-control']
+    const safeHeaders = ["accept", "accept-language", "cache-control"];
     safeHeaders.forEach((header) => {
-      const value = request.headers.get(header)
-      if (value) headers[header] = value
-    })
+      const value = request.headers.get(header);
+      if (value) headers[header] = value;
+    });
 
     // Prepare request options
     const requestOptions: RequestInit = {
       method,
-      headers
-    }
+      headers,
+    };
 
     // Add body for POST/PUT requests
-    if (method === 'POST' || method === 'PUT') {
+    if (method === "POST" || method === "PUT") {
       try {
-        const body = await request.text()
+        const body = await request.text();
         if (body) {
-          requestOptions.body = body
+          requestOptions.body = body;
         }
-      } catch (error) {
-        console.error('Error reading request body:', error)
-      }
+      } catch (error) {}
     }
 
     // Make the actual API request
-    const response = await fetch(targetUrl, requestOptions)
+    const response = await fetch(targetUrl, requestOptions);
 
     // Handle response
     if (!response.ok) {
-      const errorText = await response.text()
+      const errorText = await response.text();
 
       const errorResponse = NextResponse.json(
-        {error: JSON.parse(errorText)},
-        {status: response.status}
-      )
-      return addSecurityHeaders(errorResponse)
+        { error: JSON.parse(errorText) },
+        { status: response.status },
+      );
+      return addSecurityHeaders(errorResponse);
     }
 
     // Get response data
-    const contentType = response.headers.get('content-type')
-    let responseData
+    const contentType = response.headers.get("content-type");
+    let responseData;
 
-    if (contentType?.includes('application/json')) {
-      responseData = await response.json()
+    if (contentType?.includes("application/json")) {
+      responseData = await response.json();
     } else {
-      responseData = await response.text()
+      responseData = await response.text();
     }
 
     // Create proxy response
     const proxyResponse = NextResponse.json(responseData, {
-      status: response.status
-    })
+      status: response.status,
+    });
 
     // Copy safe response headers
-    const safeResponseHeaders = ['content-type', 'cache-control', 'etag']
+    const safeResponseHeaders = ["content-type", "cache-control", "etag"];
     safeResponseHeaders.forEach((header) => {
-      const value = response.headers.get(header)
-      if (value) proxyResponse.headers.set(header, value)
-    })
+      const value = response.headers.get(header);
+      if (value) proxyResponse.headers.set(header, value);
+    });
 
-    return addSecurityHeaders(proxyResponse)
+    return addSecurityHeaders(proxyResponse);
   } catch (error) {
-    console.error('Proxy error:', error)
     const response = NextResponse.json(
-      {error: 'Internal server error'},
-      {status: 500}
-    )
-    return addSecurityHeaders(response)
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+    return addSecurityHeaders(response);
   }
 }
