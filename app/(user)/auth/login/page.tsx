@@ -68,7 +68,7 @@ export default function Login() {
         setError(result?.error);
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('Login failed. Please try again.')
     } finally {
       setIsLoading(false)
@@ -192,6 +192,20 @@ export default function Login() {
               Forgot password?
             </Link>
           </div>
+        </div>
+
+        {/* Continue as Guest */}
+        <div className="mt-6 pt-6 border-t border-slate-100">
+          <Link
+            href="/"
+            className="w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-xl text-sm md:text-base font-medium text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition-all duration-200 mobile-transition"
+          >
+            <i className="fa-solid fa-eye text-slate-400"></i>
+            <span>Continue as Guest</span>
+          </Link>
+          <p className="text-xs text-slate-400 text-center mt-2">
+            Browse products without an account
+          </p>
         </div>
 
         <div className="mt-6 pt-6 border-t border-slate-200">

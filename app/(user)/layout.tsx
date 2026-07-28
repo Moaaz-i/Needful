@@ -23,16 +23,23 @@ export default function UserLayout({children}: {children: ReactNode}) {
 
   useApiToken()
   const isAuthPage = pathname.startsWith('/auth')
+
+  // Pages that require authentication
+  const protectedPaths = ['/cart', '/wishlist', '/profile', '/order', '/order-cash', '/order-success']
+  const isProtectedPage = protectedPaths.some(path => pathname.startsWith(path))
+
   useEffect(() => {
     if (status === 'loading') return
 
     const isAuthenticated = status === 'authenticated'
 
-    if (!isAuthenticated && !isAuthPage) {
+    // Only redirect to login if trying to access a protected page
+    if (!isAuthenticated && isProtectedPage) {
       router.replace('/auth/login')
       return
     }
 
+    // Redirect away from auth pages if already logged in
     if (isAuthenticated && isAuthPage) {
       router.replace('/')
     }

@@ -21,8 +21,6 @@ const handler = NextAuth({
               password: credentials.password,
             });
 
-            console.log(result.token);
-
             if (result.token) {
               // Verify token and get user data from verifyToken endpoint using Api
               try {

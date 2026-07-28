@@ -89,9 +89,11 @@ export default function Products() {
         params.set('search', newFilters.search)
       }
 
-      router.push(`${pathname}?${params.toString()}`)
+      const queryString = params.toString()
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname
+      window.history.replaceState(null, '', newUrl)
     },
-    [pathname, router]
+    [pathname]
   )
 
   const handleFilterChange = (name: keyof FilterOptions, value: any) => {

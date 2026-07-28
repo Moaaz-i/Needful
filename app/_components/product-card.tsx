@@ -7,8 +7,9 @@ import Image from 'next/image'
 import {Product} from '@/types'
 import {cn} from '@/lib/utils'
 import {Button} from './ui/button'
-import {ShoppingCart, Trash2, Heart} from 'lucide-react'
+import {ShoppingCart, Trash2, Heart, LogIn} from 'lucide-react'
 import {useGlobalState} from '../_contexts/global-state-context'
+import {useSession} from 'next-auth/react'
 import {
   useAddToCart,
   useRemoveFromCart,
@@ -30,6 +31,9 @@ export function ProductCard({product, className, ...props}: ProductCardProps) {
   if (!product || !product._id) {
     return null
   }
+
+  const {status} = useSession()
+  const isAuthenticated = status === 'authenticated'
 
   const {cartItems} = useRealtimeCart()
   const addToCartMutation = useAddToCart()
@@ -150,21 +154,23 @@ export function ProductCard({product, className, ...props}: ProductCardProps) {
                 </div>
               )}
 
-            {/* Wishlist Button */}
-            <button
-              type="button"
-              onClick={handleWishlistAction}
-              disabled={updatingId === product._id}
-              className={`absolute top-3 left-3 h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                isInWishlist
-                  ? 'bg-rose-500 text-white shadow-lg'
-                  : 'bg-white/90 text-slate-600 shadow-md hover:bg-white hover:text-rose-500'
-              } disabled:opacity-50 disabled:cursor-not-allowed mobile-touch`}
-            >
-              <Heart
-                className={`h-4 w-4 ${isInWishlist ? 'fill-current' : ''}`}
-              />
-            </button>
+            {/* Wishlist Button - Only show for authenticated users */}
+            {isAuthenticated && (
+              <button
+                type="button"
+                onClick={handleWishlistAction}
+                disabled={updatingId === product._id}
+                className={`absolute top-3 left-3 h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  isInWishlist
+                    ? 'bg-rose-500 text-white shadow-lg'
+                    : 'bg-white/90 text-slate-600 shadow-md hover:bg-white hover:text-rose-500'
+                } disabled:opacity-50 disabled:cursor-not-allowed mobile-touch`}
+              >
+                <Heart
+                  className={`h-4 w-4 ${isInWishlist ? 'fill-current' : ''}`}
+                />
+              </button>
+            )}
           </div>
 
           <div className="px-1 flex-1 flex flex-col">
@@ -213,79 +219,92 @@ export function ProductCard({product, className, ...props}: ProductCardProps) {
             )}
 
             <div className="mt-auto">
-              {isCartIn && cartItem ? (
-                <div className="flex items-center gap-2">
+              {isAuthenticated ? (
+                // Authenticated user: show cart actions
+                isCartIn && cartItem ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleChangeCount(-1)
+                      }}
+                      disabled={
+                        updatingId === product._id ||
+                        cartItem.count <= 1 ||
+                        state.cart.loading
+                      }
+                      className="h-7 w-7 rounded-full border border-slate-300 flex items-center justify-center text-xs hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      -
+                    </button>
+                    <span className="min-w-8 text-center text-sm">
+                      {cartItem.count}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleChangeCount(1)
+                      }}
+                      disabled={updatingId === product._id || state.cart.loading}
+                      className="h-7 w-7 rounded-full border border-slate-300 flex items-center justify-center text-xs hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      +
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        if (cartItem) {
+                          handleCartAction(e)
+                        }
+                      }}
+                      disabled={updatingId === product._id || state.cart.loading}
+                      className="text-xs text-rose-500 hover:text-rose-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      handleChangeCount(-1)
+                      handleAddToCart(product._id)
                     }}
                     disabled={
+                      product.quantity <= 0 ||
                       updatingId === product._id ||
-                      cartItem.count <= 1 ||
                       state.cart.loading
                     }
-                    className="h-7 w-7 rounded-full border border-slate-300 flex items-center justify-center text-xs hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transform hover:scale-105 transition-transform ${
+                      product.quantity <= 0
+                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        : 'bg-linear-to-r from-rose-500 to-pink-500 text-white hover:from-rose-600 hover:to-pink-600'
+                    }`}
                   >
-                    -
+                    {product.quantity <= 0
+                      ? 'Out of Stock'
+                      : updatingId === product._id || state.cart.loading
+                      ? 'Adding...'
+                      : 'Add to Cart'}
                   </button>
-                  <span className="min-w-8 text-center text-sm">
-                    {cartItem.count}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleChangeCount(1)
-                    }}
-                    disabled={updatingId === product._id || state.cart.loading}
-                    className="h-7 w-7 rounded-full border border-slate-300 flex items-center justify-center text-xs hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    +
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      if (cartItem) {
-                        handleCartAction(e)
-                      }
-                    }}
-                    disabled={updatingId === product._id || state.cart.loading}
-                    className="text-xs text-rose-500 hover:text-rose-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Remove
-                  </button>
-                </div>
+                )
               ) : (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    handleAddToCart(product._id)
-                  }}
-                  disabled={
-                    product.quantity <= 0 ||
-                    updatingId === product._id ||
-                    state.cart.loading
-                  }
-                  className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transform hover:scale-105 transition-transform ${
-                    product.quantity <= 0
-                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      : 'bg-linear-to-r from-rose-500 to-pink-500 text-white hover:from-rose-600 hover:to-pink-600'
-                  }`}
+                // Guest user: show login prompt
+                <Link
+                  href="/auth/login"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 hover:text-slate-900 transition-all"
                 >
-                  {product.quantity <= 0
-                    ? 'Out of Stock'
-                    : updatingId === product._id || state.cart.loading
-                    ? 'Adding...'
-                    : 'Add to Cart'}
-                </button>
+                  <LogIn className="w-4 h-4" />
+                  Login to Shop
+                </Link>
               )}
             </div>
           </div>

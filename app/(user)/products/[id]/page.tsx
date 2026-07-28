@@ -16,12 +16,16 @@ import {
 import {Swiper, SwiperSlide} from 'swiper/react'
 import 'swiper/css'
 import {Pagination, Autoplay} from 'swiper/modules'
-import {Heart, ShoppingCart} from 'lucide-react'
+import {Heart, ShoppingCart, LogIn} from 'lucide-react'
 import LoadingSpinner from '../../../_components/LoadingSpinner'
+import {useSession} from 'next-auth/react'
+import Link from 'next/link'
 
 export default function ProductDetails() {
   const params = useParams()
   const id = (params as {id?: string})?.id
+  const {status} = useSession()
+  const isAuthenticated = status === 'authenticated'
 
   const [product, setProduct] = useState<Product | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -259,45 +263,47 @@ export default function ProductDetails() {
                     )}
                   </div>
 
-                  {/* Status Indicators */}
-                  <div className="mt-3 flex items-center gap-3">
-                    {/* Wishlist Status */}
-                    <button
-                      type="button"
-                      onClick={handleWishlistAction}
-                      disabled={updatingId === id}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${
-                        isInWishlist
-                          ? 'bg-rose-50 border-rose-200 text-rose-600'
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                      } disabled:opacity-50 disabled:cursor-not-allowed`}
-                    >
-                      <Heart
-                        className={`h-4 w-4 ${
-                          isInWishlist ? 'fill-current' : ''
-                        }`}
-                      />
-                      <span className="text-sm font-medium">
-                        {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
-                      </span>
-                    </button>
+                  {/* Status Indicators - Only for authenticated users */}
+                  {isAuthenticated && (
+                    <div className="mt-3 flex items-center gap-3">
+                      {/* Wishlist Status */}
+                      <button
+                        type="button"
+                        onClick={handleWishlistAction}
+                        disabled={updatingId === id}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${
+                          isInWishlist
+                            ? 'bg-rose-50 border-rose-200 text-rose-600'
+                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        <Heart
+                          className={`h-4 w-4 ${
+                            isInWishlist ? 'fill-current' : ''
+                          }`}
+                        />
+                        <span className="text-sm font-medium">
+                          {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
+                        </span>
+                      </button>
 
-                    {/* Cart Status */}
-                    <div
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-                        isInCart
-                          ? 'bg-green-50 border-green-200 text-green-600'
-                          : 'bg-slate-50 border-slate-200 text-slate-500'
-                      }`}
-                    >
-                      <ShoppingCart className="h-4 w-4" />
-                      <span className="text-sm font-medium">
-                        {isInCart
-                          ? `In Cart (${cartItem?.count || 1})`
-                          : 'Not in Cart'}
-                      </span>
+                      {/* Cart Status */}
+                      <div
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                          isInCart
+                            ? 'bg-green-50 border-green-200 text-green-600'
+                            : 'bg-slate-50 border-slate-200 text-slate-500'
+                        }`}
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          {isInCart
+                            ? `In Cart (${cartItem?.count || 1})`
+                            : 'Not in Cart'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="mt-2 flex items-center gap-4">
                     {product.ratingsAverage && (
@@ -383,59 +389,71 @@ export default function ProductDetails() {
                 )}
 
                 <div className="mt-4 flex flex-wrap gap-3">
-                  {isInCart && cartItem ? (
-                    <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-2">
+                  {isAuthenticated ? (
+                    // Authenticated: show cart actions
+                    isInCart && cartItem ? (
+                      <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-2">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateQuantity(-1)}
+                          disabled={updatingId === id || cartItem.count <= 1}
+                          className="h-8 w-8 rounded-full border border-slate-300 flex items-center justify-center text-sm hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          -
+                        </button>
+                        <span className="min-w-12 text-center font-semibold">
+                          {cartItem.count}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateQuantity(1)}
+                          disabled={updatingId === id}
+                          className="h-8 w-8 rounded-full border border-slate-300 flex items-center justify-center text-sm hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          +
+                        </button>
+                        <div className="flex-1" />
+                        <button
+                          type="button"
+                          onClick={handleRemoveFromCart}
+                          disabled={updatingId === id}
+                          className="px-3 py-1 text-sm text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         type="button"
-                        onClick={() => handleUpdateQuantity(-1)}
-                        disabled={updatingId === id || cartItem.count <= 1}
-                        className="h-8 w-8 rounded-full border border-slate-300 flex items-center justify-center text-sm hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={adding}
+                        onClick={handleAddToCart}
+                        className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-rose-500 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                       >
-                        -
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m-10 0h10m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                          />
+                        </svg>
+                        {adding ? 'Adding...' : 'Add to Cart'}
                       </button>
-                      <span className="min-w-12 text-center font-semibold">
-                        {cartItem.count}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateQuantity(1)}
-                        disabled={updatingId === id}
-                        className="h-8 w-8 rounded-full border border-slate-300 flex items-center justify-center text-sm hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        +
-                      </button>
-                      <div className="flex-1" />
-                      <button
-                        type="button"
-                        onClick={handleRemoveFromCart}
-                        disabled={updatingId === id}
-                        className="px-3 py-1 text-sm text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Remove
-                      </button>
-                    </div>
+                    )
                   ) : (
-                    <button
-                      type="button"
-                      disabled={adding}
-                      onClick={handleAddToCart}
-                      className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-rose-500 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                    // Guest: show login prompt
+                    <Link
+                      href="/auth/login"
+                      className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-slate-100 border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-all"
                     >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m-10 0h10m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                        />
-                      </svg>
-                      {adding ? 'Adding...' : 'Add to Cart'}
-                    </button>
+                      <LogIn className="w-5 h-5" />
+                      Login to Add to Cart
+                    </Link>
                   )}
                 </div>
 

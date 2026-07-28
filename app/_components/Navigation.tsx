@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import {usePathname, useRouter} from 'next/navigation'
 import {useState} from 'react'
+import {useSession} from 'next-auth/react'
 import {
   FiShoppingCart,
   FiUser,
@@ -12,7 +13,9 @@ import {
   FiLogOut,
   FiMenu,
   FiX,
-  FiHeart
+  FiHeart,
+  FiLogIn,
+  FiUserPlus
 } from 'react-icons/fi'
 import {useRealtimeCart, useRealtimeWishlist} from '@/app/_hooks/use-api-query'
 import SearchBar from './SearchBar'
@@ -20,13 +23,15 @@ import SearchBar from './SearchBar'
 export default function Navigation() {
   const pathname = usePathname()
   const router = useRouter()
+  const {data: session, status} = useSession()
   const {cartCount} = useRealtimeCart()
   const {wishlistCount} = useRealtimeWishlist()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  const isAuthenticated = status === 'authenticated'
+
   const handleLogout = async () => {
     try {
-      // Use NextAuth signOut
       const {signOut} = await import('next-auth/react')
       await signOut({callbackUrl: '/auth/login'})
     } catch (error) {
@@ -40,15 +45,24 @@ export default function Navigation() {
     return false
   }
 
-  const navigationItems = [
+  // Public navigation items (visible to everyone)
+  const publicItems = [
     {href: '/', label: 'Home', icon: FiHome},
     {href: '/products', label: 'Products', icon: FiPackage},
     {href: '/categories', label: 'Categories', icon: FiGrid},
-    {href: '/brands', label: 'Brands', icon: FiGrid},
+    {href: '/brands', label: 'Brands', icon: FiGrid}
+  ]
+
+  // Auth-only navigation items
+  const authItems = [
     {href: '/wishlist', label: 'Wishlist', icon: FiHeart, badge: wishlistCount},
     {href: '/cart', label: 'Cart', icon: FiShoppingCart, badge: cartCount},
     {href: '/profile', label: 'Profile', icon: FiUser}
   ]
+
+  const navigationItems = isAuthenticated
+    ? [...publicItems, ...authItems]
+    : publicItems
 
   return (
     <nav className="bg-white shadow-sm border-b border-slate-200 fixed w-full top-0 z-50">
@@ -83,7 +97,7 @@ export default function Navigation() {
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
-                  {item.badge !== undefined && (
+                  {'badge' in item && item.badge !== undefined && (
                     <span className="ml-1 bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {item.badge}
                     </span>
@@ -91,13 +105,34 @@ export default function Navigation() {
                 </Link>
               )
             })}
-            <button
-              onClick={handleLogout}
-              className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-            >
-              <FiLogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </button>
+
+            {/* Auth actions */}
+            {isAuthenticated ? (
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+              >
+                <FiLogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
+            ) : (
+              <div className="flex items-center space-x-2 ml-2">
+                <Link
+                  href="/auth/login"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all"
+                >
+                  <FiLogIn className="w-4 h-4" />
+                  <span>Login</span>
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 transition-all shadow-sm hover:shadow-md"
+                >
+                  <FiUserPlus className="w-4 h-4" />
+                  <span>Sign Up</span>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -136,7 +171,7 @@ export default function Navigation() {
                   >
                     <Icon className="w-5 h-5" />
                     <span>{item.label}</span>
-                    {item.badge !== undefined && (
+                    {'badge' in item && item.badge !== undefined && (
                       <span className="ml-auto bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                         {item.badge}
                       </span>
@@ -144,13 +179,36 @@ export default function Navigation() {
                   </Link>
                 )
               })}
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-              >
-                <FiLogOut className="w-5 h-5" />
-                <span>Logout</span>
-              </button>
+
+              {/* Mobile Auth Actions */}
+              {isAuthenticated ? (
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                >
+                  <FiLogOut className="w-5 h-5" />
+                  <span>Logout</span>
+                </button>
+              ) : (
+                <div className="pt-3 mt-3 border-t border-slate-100 space-y-2">
+                  <Link
+                    href="/auth/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all"
+                  >
+                    <FiLogIn className="w-5 h-5" />
+                    <span>Login</span>
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 transition-all"
+                  >
+                    <FiUserPlus className="w-5 h-5" />
+                    <span>Create Account</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

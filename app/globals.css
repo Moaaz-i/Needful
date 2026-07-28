@@ -2,6 +2,11 @@
 
 @custom-variant link-active (&[data-active='true']);
 
+/* Toast z-index override */
+.toast {
+  z-index: 999999 !important;
+}
+
 /* Mobile-optimized styles */
 @media (max-width: 768px) {
   /* Reset and base mobile styles */

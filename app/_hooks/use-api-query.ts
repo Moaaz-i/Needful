@@ -1,6 +1,7 @@
 'use client'
 
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query'
+import {useSession} from 'next-auth/react'
 
 // Generic query hook
 export function useApiQuery<T>(
@@ -12,6 +13,7 @@ export function useApiQuery<T>(
     refetchInterval?: number
     refetchOnWindowFocus?: boolean
     refetchOnReconnect?: boolean
+    enabled?: boolean
   }
 ) {
   return useQuery({
@@ -19,9 +21,10 @@ export function useApiQuery<T>(
     queryFn,
     staleTime: options?.staleTime || 60 * 1000,
     select: options?.select,
-    refetchInterval: options?.refetchInterval || 30 * 1000, // Auto-refresh every 30 seconds by default
-    refetchOnWindowFocus: options?.refetchOnWindowFocus !== false, // Enable by default
-    refetchOnReconnect: options?.refetchOnReconnect !== false // Enable by default
+    refetchInterval: options?.refetchInterval || 30 * 1000,
+    refetchOnWindowFocus: options?.refetchOnWindowFocus !== false,
+    refetchOnReconnect: options?.refetchOnReconnect !== false,
+    enabled: options?.enabled !== false
   })
 }
 
@@ -89,14 +92,18 @@ export function useGlobalRefresh() {
 
 // Cart hooks
 export function useCart() {
+  const {status} = useSession()
+  const isAuthenticated = status === 'authenticated'
+
   return useApiQuery(
     ['cart'],
     () => import('../_api/cart').then((m) => m.getCart()),
     {
       staleTime: 5 * 1000,
-      refetchInterval: 3 * 1000,
-      refetchOnWindowFocus: true,
-      refetchOnReconnect: true
+      refetchInterval: isAuthenticated ? 3 * 1000 : false as any,
+      refetchOnWindowFocus: isAuthenticated,
+      refetchOnReconnect: isAuthenticated,
+      enabled: isAuthenticated
     }
   )
 }
@@ -215,15 +222,19 @@ export function useBrands() {
 
 // Wishlist hooks
 export function useWishlist() {
+  const {status} = useSession()
+  const isAuthenticated = status === 'authenticated'
+
   return useApiQuery(
     ['wishlist'],
     () => import('../_api/wishlist').then((m) => m.getWishlist()),
     {
       select: (data) => data?.data || [],
       staleTime: 2 * 60 * 1000,
-      refetchInterval: 30 * 1000,
-      refetchOnWindowFocus: true,
-      refetchOnReconnect: true
+      refetchInterval: isAuthenticated ? 30 * 1000 : false as any,
+      refetchOnWindowFocus: isAuthenticated,
+      refetchOnReconnect: isAuthenticated,
+      enabled: isAuthenticated
     }
   )
 }
