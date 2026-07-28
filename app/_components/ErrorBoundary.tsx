@@ -1,15 +1,18 @@
 'use client'
 
-import React, {Component, ErrorInfo, ReactNode} from 'react'
-import {FiAlertTriangle, FiRefreshCw, FiInfo, FiX} from 'react-icons/fi'
-import {motion} from 'framer-motion'
+import { motion } from "framer-motion";
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { FiAlertTriangle, FiInfo, FiRefreshCw, FiX } from "react-icons/fi";
 
 interface ErrorBoundaryProps {
-  children: ReactNode
-  fallback?: React.ComponentType<{error: Error | null; resetError: () => void}>
-  onError?: (error: Error, errorInfo: ErrorInfo) => void
-  showDetails?: boolean
-  className?: string
+  children: ReactNode | null;
+  fallback?: React.ComponentType<{
+    error: Error | null;
+    resetError: () => void;
+  }>;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  showDetails?: boolean;
+  className?: string;
 }
 
 interface ErrorBoundaryState {
@@ -72,12 +75,12 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       return (
         <div
           className={`min-h-screen flex items-center justify-center bg-slate-50 p-4 ${
-            this.props.className || ''
+            this.props.className || ""
           }`}
         >
           <motion.div
-            initial={{opacity: 0, y: -20}}
-            animate={{opacity: 1, y: 0}}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
             className="max-w-2xl w-full bg-white rounded-xl shadow-lg overflow-hidden"
           >
             <div className="bg-rose-500 p-4 text-white flex items-center">
@@ -97,7 +100,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                     Something went wrong
                   </h3>
                   <p className="mt-1 text-slate-600">
-                    We're sorry, but we encountered an error. Please try again.
+                    We&apos;re sorry, but we encountered an error. Please try
+                    again.
                   </p>
                 </div>
               </div>
@@ -123,8 +127,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
                   {showDetails && (
                     <motion.div
-                      initial={{height: 0, opacity: 0}}
-                      animate={{height: 'auto', opacity: 1}}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
                       className="mt-2 overflow-hidden"
                     >
                       <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 text-sm">
@@ -147,7 +151,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                     onClick={this.toggleDetails}
                     className="px-4 py-2 border border-slate-300 rounded-md text-slate-700 hover:bg-slate-50 transition-colors"
                   >
-                    {showDetails ? 'Hide Details' : 'Show Details'}
+                    {showDetails ? "Hide Details" : "Show Details"}
                   </button>
                 )}
                 <button
@@ -161,7 +165,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             </div>
           </motion.div>
         </div>
-      )
+      );
     }
 
     return children

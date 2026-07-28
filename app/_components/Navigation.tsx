@@ -1,24 +1,27 @@
 'use client'
 
-import Link from 'next/link'
-import {usePathname, useRouter} from 'next/navigation'
-import {useState} from 'react'
-import {useSession} from 'next-auth/react'
 import {
-  FiShoppingCart,
-  FiUser,
-  FiHome,
-  FiPackage,
+  useRealtimeCart,
+  useRealtimeWishlist,
+} from "@/app/_hooks/use-api-query";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import {
   FiGrid,
+  FiHeart,
+  FiHome,
+  FiLogIn,
   FiLogOut,
   FiMenu,
+  FiPackage,
+  FiShoppingCart,
+  FiUser,
+  FiUserPlus,
   FiX,
-  FiHeart,
-  FiLogIn,
-  FiUserPlus
-} from 'react-icons/fi'
-import {useRealtimeCart, useRealtimeWishlist} from '@/app/_hooks/use-api-query'
-import SearchBar from './SearchBar'
+} from "react-icons/fi";
+import SearchBar from "./SearchBar";
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -31,13 +34,13 @@ export default function Navigation() {
   const isAuthenticated = status === 'authenticated'
 
   const handleLogout = async () => {
+    const { signOut } = await import("next-auth/react");
     try {
-      const {signOut} = await import('next-auth/react')
-      await signOut({callbackUrl: '/auth/login'})
+      await signOut({ callbackUrl: "/auth/login" });
     } catch (error) {
-      router.push('/auth/login')
+      router.push("/auth/login");
     }
-  }
+  };
 
   const isActive = (path: string) => {
     if (path === '/' && pathname === '/') return true
@@ -83,28 +86,35 @@ export default function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navigationItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? 'bg-rose-50 text-rose-600'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                  {'badge' in item && item.badge !== undefined && (
-                    <span className="ml-1 bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              )
-            })}
+            {navigationItems.map(
+              (item: {
+                href: string;
+                label: string;
+                icon: React.ComponentType<{ className: string }>;
+                badge?: number;
+              }) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive(item.href)
+                        ? "bg-rose-50 text-rose-600"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                    {"badge" in item && item.badge !== undefined && (
+                      <span className="ml-1 bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              },
+            )}
 
             {/* Auth actions */}
             {isAuthenticated ? (
@@ -156,29 +166,36 @@ export default function Navigation() {
               <SearchBar />
             </div>
             <div className="flex flex-col space-y-1">
-              {navigationItems.map((item) => {
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActive(item.href)
-                        ? 'bg-rose-50 text-rose-600'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span>{item.label}</span>
-                    {'badge' in item && item.badge !== undefined && (
-                      <span className="ml-auto bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                )
-              })}
+              {navigationItems.map(
+                (item: {
+                  href: string;
+                  label: string;
+                  icon: React.ComponentType<{ className: string }>;
+                  badge?: number;
+                }) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive(item.href)
+                          ? "bg-rose-50 text-rose-600"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span>{item.label}</span>
+                      {"badge" in item && item.badge !== undefined && (
+                        <span className="ml-auto bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                },
+              )}
 
               {/* Mobile Auth Actions */}
               {isAuthenticated ? (
@@ -214,5 +231,5 @@ export default function Navigation() {
         )}
       </div>
     </nav>
-  )
+  );
 }
